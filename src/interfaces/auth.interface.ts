@@ -33,7 +33,7 @@ export interface IAuthToken {
 export interface IOAuthLogin {
   getOAuthLoginPageUrl(params?: string): Promise<string>,
   getOAuthUser(code?: string): Promise<IOAuthUser>,
-  createOAuthToken(oAuthUser: IOAuthUser, invitationId?: string | null): string,
+  createOAuthToken(oAuthUser: IOAuthUser, invitationId?: string | null, clientRedirectUri?: string): string,
 }
 
 export interface IGetProfile {

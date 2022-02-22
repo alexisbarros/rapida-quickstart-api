@@ -36,19 +36,36 @@ export class AuthController {
     this.getProfile = new ProfileFromAPIImplementation()
   }
 
-  @get('auth/google-signin')
-  @response(200, {description: 'Redirect to Google login page'})
-  async redirectToGoogleLoginPage(
-    @param.query.string('invitationId') invitationId?: string,
+  @get('google-login-url')
+  @response(200, {
+    description: 'Google URL',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+      data: {url: {type: 'string'}}
+    }
+  })
+  async getGoogleLoginPageUrl(
+    @param.query.string('invitation') invitationId?: string,
+    @param.query.string('client-redirect-uri') clientRedirectUri?: string,
     @param.query.string('locale') locale?: LocaleEnum,
-  ): Promise<void | IHttpResponse> {
+  ): Promise<IHttpResponse> {
     try {
 
-      const invitationParam = invitationId ? `invitationId=${invitationId}` : ''
+      const clientRedirectUriParam = clientRedirectUri ?
+        `clientRedirectUri=${clientRedirectUri}` : ''
+      const invitationParam = invitationId ? `&invitationId=${invitationId}` : ''
 
-      const url = await this.authService.getOAuthLoginPageURL(this.googleOAuth, invitationParam)
+      const url = await this.authService.getOAuthLoginPageURL(
+        this.googleOAuth, `${clientRedirectUriParam}${invitationParam}`
+      )
 
-      this.httpResponse.redirect(url)
+      return HttpResponseToClient.okHttpResponse({
+        data: {url},
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
 
     } catch (err) {
 
@@ -77,7 +94,8 @@ export class AuthController {
 
       const token = this.authService.createOAuthToken(this.googleOAuth, googleUser, invitationId)
 
-      this.httpResponse.redirect(`${process.env.CLIENT_URI}?token=${token}`)
+      const clientRedirectUri = new URLSearchParams(state).get('clientRedirectUri')
+      this.httpResponse.redirect(`${clientRedirectUri}?token=${token}`)
 
     } catch (err) {
 
@@ -91,7 +109,7 @@ export class AuthController {
     }
   }
 
-  @get('auth/login')
+  @get('login')
   @response(200, {
     description: 'Auth token',
     properties: {
@@ -107,12 +125,13 @@ export class AuthController {
     }
   })
   async login(
+    @param.query.string('secret') secret?: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
 
       const tokenVerified = JwtToken.verifyAuthToken(
-        this.httpRequest.headers.authorization!, process.env.PROJECT_SECRET!,
+        this.httpRequest.headers.authorization!, secret!,
         this.httpRequest, this.httpResponse, locale
       )
       if (!tokenVerified) return
@@ -142,7 +161,7 @@ export class AuthController {
     }
   }
 
-  @post('auth/signup')
+  @post('signup')
   @response(200, {
     description: 'User registered',
     properties: HttpDocumentation.createDocResponseSchemaForFindOneResult(User)
@@ -151,12 +170,13 @@ export class AuthController {
     @requestBody({
       content: HttpDocumentation.createDocRequestSchema(Signup)
     }) data: Signup,
+    @param.query.string('secret') secret?: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
 
       const tokenVerified = JwtToken.verifyAuthToken(
-        this.httpRequest.headers.authorization!, process.env.PROJECT_SECRET!,
+        this.httpRequest.headers.authorization!, secret!,
         this.httpRequest, this.httpResponse, locale
       )
       if (!tokenVerified) return
@@ -185,7 +205,7 @@ export class AuthController {
     }
   }
 
-  @get('auth/refresh-token')
+  @get('refresh-token')
   @response(200, {
     description: 'Auth token',
     properties: {
@@ -200,12 +220,13 @@ export class AuthController {
     }
   })
   async refreshToken(
+    @param.query.string('secret') secret?: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
 
       const tokenVerified = JwtToken.verifyAuthToken(
-        this.httpRequest.headers.authorization!, process.env.PROJECT_SECRET!,
+        this.httpRequest.headers.authorization!, secret!,
         this.httpRequest, this.httpResponse, locale
       )
       if (!tokenVerified) return

@@ -1,7 +1,9 @@
 import {repository} from '@loopback/repository'
+import {Request, Response} from '@loopback/rest'
 import jwt from 'jsonwebtoken'
 import {AdditionalInfoModel, Signup} from '../entities/signup.entity'
 import {LocaleEnum} from '../enums/locale.enum'
+import {JwtToken} from '../implementations'
 import {IGetProfile, ILoginResponse, ILoginUserInfo, IOAuthLogin, IRefreshTokenResponse} from '../interfaces/auth.interface'
 import {IOAuthUser} from '../interfaces/user.interface'
 import {Company} from '../models/company.model'
@@ -216,6 +218,48 @@ export class AuthService {
       })
     }
 
+  }
+
+  public async verifyAuthorization(request: Request, response: Response, action: string, collection: string) {
+    const tokenVerified = JwtToken.verifyAuthToken(
+      request.headers.authorization!, process.env.PROJECT_SECRET!,
+      request, response, LocaleEnum['pt-BR']
+    )
+    if (!tokenVerified) return
+
+    const userId = JwtToken.getUserIdFromToken(request.headers.authorization!)
+
+    let ownerId = null
+
+    const permissionGroups = await this.userRepository
+      .permissionGroups(userId)
+      .find({
+        where: {projectId: process.env.PROJECT_ID},
+        include: [{
+          relation: 'permissions', scope: {
+            include: [
+              {relation: 'permissionActions', scope: {where: {name: action}}},
+              {relation: 'module', scope: {where: {collection}}}
+            ]
+          }
+        }]
+      })
+    const permissionGroup = permissionGroups[0]
+
+    if (action) {
+      if (permissionGroup) {//} && permissionGroup.name !== 'Kunlatek - Admin') {
+        let userHasPermission = false;
+        permissionGroup.permissions?.forEach(permission => {
+          if (permission.module && permission.permissionActions.length) {
+            userHasPermission = true
+            ownerId = permissionGroup._createdBy
+          }
+        })
+        if (!userHasPermission) throw serverMessages['httpResponse']['unauthorizedError'][LocaleEnum['pt-BR']]
+      } else throw serverMessages['httpResponse']['unauthorizedError'][LocaleEnum['pt-BR']]
+    }
+
+    return {userId, ownerId}
   }
 }
 

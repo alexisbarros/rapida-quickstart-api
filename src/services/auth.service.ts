@@ -36,21 +36,21 @@ export class AuthService {
     return oAuth.createOAuthToken(oAuthUser, invitationId)
   }
 
-  public async login(userLoginInfo: ILoginUserInfo): Promise<ILoginResponse | null> {
+  public async login(userLoginInfo: ILoginUserInfo, projectId: string): Promise<ILoginResponse | null> {
 
     const {email, googleId, invitationId} = userLoginInfo
 
     const permissionGroupId = invitationId ?
       await this.getPermissionGroupIdFromInvitation(invitationId, email!) : null
 
-    let user = await this.findUserWithPermissions(email!, googleId!)
+    let user = await this.findUserWithPermissions(email!, projectId!, googleId!)
     if (!user) return null
 
     if (invitationId) {
       const userHasPermissionGroup = user.permissionGroups?.find(permissionGroup => permissionGroup._id === permissionGroupId)
       if (!userHasPermissionGroup) {
         await this.giveTheUserPermission(permissionGroupId!, user._id!)
-        user = await this.findUserWithPermissions(email!, googleId!)
+        user = await this.findUserWithPermissions(email!, projectId!, googleId!)
         await this.invitationRepository.updateById(invitationId, {
           email, permissionGroupId: permissionGroupId!, _deletedAt: new Date()
         })
@@ -60,12 +60,12 @@ export class AuthService {
     return {
       authToken: jwt.sign({
         id: user?._id,
-      }, process.env.PROJECT_SECRET!, {
+      }, process.env.AUTENTIKIGO_SECRET!, {
         expiresIn: '5m'
       }),
       authRefreshToken: jwt.sign({
         id: user?._id,
-      }, process.env.PROJECT_SECRET!, {
+      }, process.env.AUTENTIKIGO_SECRET!, {
         expiresIn: '10m'
       }),
       userData: user
@@ -73,14 +73,14 @@ export class AuthService {
 
   }
 
-  private async findUserWithPermissions(email: string, googleId: string, appleId?: string): Promise<User | null> {
+  private async findUserWithPermissions(email: string, projectId: string, googleId: string, appleId?: string): Promise<User | null> {
 
     const user = await this.userRepository.findOne({
       where: {and: [{email}, {googleId}]}, include: [
         'person', 'company',
         {
           relation: 'permissionGroups', scope: {
-            where: {projectId: process.env.PROJECT_ID},
+            where: {projectId: projectId},
             include: [{
               relation: 'permissions', scope: {
                 include: ['module', 'permissionActions']
@@ -206,12 +206,12 @@ export class AuthService {
     return {
       authToken: jwt.sign({
         id: id,
-      }, process.env.PROJECT_SECRET!, {
+      }, process.env.AUTENTIKIGO_SECRET!, {
         expiresIn: '5m'
       }),
       authRefreshToken: jwt.sign({
         id: id,
-      }, process.env.PROJECT_SECRET!, {
+      }, process.env.AUTENTIKIGO_SECRET!, {
         expiresIn: '10m'
       })
     }

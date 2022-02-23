@@ -42,7 +42,11 @@ export class AuthController {
     properties: {
       message: {type: 'string'},
       statusCode: {type: 'number'},
-      data: {url: {type: 'string'}}
+      data: {
+        properties: {
+          url: {type: 'string'}
+        }
+      }
     }
   })
   async getGoogleLoginPageUrl(
@@ -125,20 +129,20 @@ export class AuthController {
     }
   })
   async login(
-    @param.query.string('secret') secret?: string,
+    @param.query.string('project-id') projectId: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
 
       const tokenVerified = JwtToken.verifyAuthToken(
-        this.httpRequest.headers.authorization!, secret!,
+        this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
         this.httpRequest, this.httpResponse, locale
       )
       if (!tokenVerified) return
 
       const loginUserInfo = JwtToken.getLoginUserInfoFromToken(this.httpRequest.headers.authorization!)
 
-      const tokenAndUser = await this.authService.login(loginUserInfo)
+      const tokenAndUser = await this.authService.login(loginUserInfo, projectId)
 
       return HttpResponseToClient.okHttpResponse({
         data: {...tokenAndUser},
@@ -170,13 +174,12 @@ export class AuthController {
     @requestBody({
       content: HttpDocumentation.createDocRequestSchema(Signup)
     }) data: Signup,
-    @param.query.string('secret') secret?: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
 
       const tokenVerified = JwtToken.verifyAuthToken(
-        this.httpRequest.headers.authorization!, secret!,
+        this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
         this.httpRequest, this.httpResponse, locale
       )
       if (!tokenVerified) return
@@ -220,13 +223,12 @@ export class AuthController {
     }
   })
   async refreshToken(
-    @param.query.string('secret') secret?: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
 
       const tokenVerified = JwtToken.verifyAuthToken(
-        this.httpRequest.headers.authorization!, secret!,
+        this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
         this.httpRequest, this.httpResponse, locale
       )
       if (!tokenVerified) return

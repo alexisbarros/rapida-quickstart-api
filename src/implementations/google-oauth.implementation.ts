@@ -64,7 +64,7 @@ export class GoogleOAuthImplementation implements IOAuthLogin {
     return sign({
       email: oAuthUser.email, googleId: oAuthUser.id, invitationId
     },
-      process.env.PROJECT_SECRET!, {
+      process.env.AUTENTIKIGO_SECRET!, {
       expiresIn: '5m'
     })
 

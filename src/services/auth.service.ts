@@ -1,9 +1,7 @@
 import {repository} from '@loopback/repository'
-import {Request, Response} from '@loopback/rest'
 import jwt from 'jsonwebtoken'
 import {AdditionalInfoModel, Signup} from '../entities/signup.entity'
 import {LocaleEnum} from '../enums/locale.enum'
-import {JwtToken} from '../implementations'
 import {IGetProfile, ILoginResponse, ILoginUserInfo, IOAuthLogin, IRefreshTokenResponse} from '../interfaces/auth.interface'
 import {IOAuthUser} from '../interfaces/user.interface'
 import {Company} from '../models/company.model'
@@ -220,21 +218,14 @@ export class AuthService {
 
   }
 
-  public async verifyAuthorization(request: Request, response: Response, action: string, collection: string) {
-    const tokenVerified = JwtToken.verifyAuthToken(
-      request.headers.authorization!, process.env.PROJECT_SECRET!,
-      request, response, LocaleEnum['pt-BR']
-    )
-    if (!tokenVerified) return
-
-    const userId = JwtToken.getUserIdFromToken(request.headers.authorization!)
+  public async verifyAuthorization(userId: string, action: string, collection: string, projectId: string) {
 
     let ownerId = null
 
     const permissionGroups = await this.userRepository
       .permissionGroups(userId)
       .find({
-        where: {projectId: process.env.PROJECT_ID},
+        where: {projectId: projectId},
         include: [{
           relation: 'permissions', scope: {
             include: [

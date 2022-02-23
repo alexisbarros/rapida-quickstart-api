@@ -257,4 +257,56 @@ export class AuthController {
 
     }
   }
+
+  @get('verify-authorization')
+  @response(200, {
+    description: 'User has authorization',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+      data: {
+        properties: {
+          userId: {type: 'string'},
+          ownerId: {type: 'string'},
+        }
+      }
+    }
+  })
+  async verifyAuthorization(
+    @param.query.string('collection') collection: string,
+    @param.query.string('action') action: string,
+    @param.query.string('project-id') projectId: string,
+    @param.query.string('locale') locale?: LocaleEnum,
+  ): Promise<IHttpResponse> {
+    try {
+
+      const tokenVerified = JwtToken.verifyAuthToken(
+        this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
+        this.httpRequest, this.httpResponse, locale
+      )
+      if (!tokenVerified) throw serverMessages['httpResponse']['unauthorizedError'][LocaleEnum['pt-BR']]
+
+      const userId = JwtToken.getUserIdFromToken(this.httpRequest.headers.authorization!)
+
+      const data = await this.authService.verifyAuthorization(userId, action, collection, projectId);
+
+      return HttpResponseToClient.okHttpResponse({
+        data,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    } catch (err) {
+
+      return HttpResponseToClient.badRequestErrorHttpResponse({
+        message: err.message,
+        logMessage: err.message,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    }
+  }
 }

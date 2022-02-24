@@ -104,7 +104,7 @@ export class AuthService {
     const whereCondition = permissionGroupsOwnerIds ?
       {
         where: {
-          or: (permissionGroupsOwnerIds ?? []).map((permissionGroupOwnerId) => {
+          or: (permissionGroupsOwnerIds ?? [null]).map((permissionGroupOwnerId) => {
             return {_id: permissionGroupOwnerId}
           })
         },

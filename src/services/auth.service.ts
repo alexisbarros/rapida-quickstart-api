@@ -101,15 +101,17 @@ export class AuthService {
 
     const permissionGroupsOwnerIds = user?.permissionGroups?.map(permissioGroup => permissioGroup._ownerId)
 
-    const whereCondition = permissionGroupsOwnerIds ?
+    let whereCondition = permissionGroupsOwnerIds ?
       {
-        where: {
-          or: (permissionGroupsOwnerIds ?? []).map((permissionGroupOwnerId) => {
-            return {_id: permissionGroupOwnerId}
-          })
-        },
+        where: {},
         include: ['person', 'company']
       } : {}
+    if (permissionGroupsOwnerIds?.length)
+      whereCondition['where'] = {
+        or: permissionGroupsOwnerIds?.map((permissionGroupOwnerId) => {
+          return {_id: permissionGroupOwnerId}
+        })
+      }
 
     const permissionsGroupsOwners = await this.userRepository.find(whereCondition)
 

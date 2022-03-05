@@ -11,7 +11,7 @@ export class GoogleOAuthImplementation implements IOAuthLogin {
       const googleOAuth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        `${process.env.GOOGLE_REDIRECT_URI}/auth/google`
+        `${process.env.OAUTH_REDIRECT_URI}/auth/google`
       )
 
       const url = googleOAuth2Client.generateAuthUrl({
@@ -39,7 +39,7 @@ export class GoogleOAuthImplementation implements IOAuthLogin {
       const googleOAuth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        `${process.env.GOOGLE_REDIRECT_URI}/auth/google`
+        `${process.env.OAUTH_REDIRECT_URI}/auth/google`
       )
 
       const {tokens} = await googleOAuth2Client.getToken(code!)

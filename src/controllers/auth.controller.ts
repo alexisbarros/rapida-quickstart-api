@@ -12,6 +12,7 @@ import {
 import {URLSearchParams} from 'url';
 import {Signup} from '../entities/signup.entity';
 import {LocaleEnum} from '../enums/locale.enum';
+import {AppleOAuthImplementation} from '../implementations/apple-oauth.implementation';
 import {GoogleOAuthImplementation} from '../implementations/google-oauth.implementation';
 import {HttpDocumentation, HttpResponseToClient, JwtToken} from '../implementations/index';
 import {ProfileFromAPIImplementation} from '../implementations/profile-from-api.implementation';
@@ -24,6 +25,7 @@ import {serverMessages} from './../utils/server-messages';
 export class AuthController {
 
   private googleOAuth: IOAuthLogin
+  private appleOAuth: IOAuthLogin
   private getProfile: IGetProfile
 
   constructor(
@@ -33,6 +35,7 @@ export class AuthController {
     @service(AuthService) private authService: AuthService,
   ) {
     this.googleOAuth = new GoogleOAuthImplementation()
+    this.appleOAuth = new AppleOAuthImplementation()
     this.getProfile = new ProfileFromAPIImplementation()
   }
 
@@ -105,6 +108,83 @@ export class AuthController {
 
       return HttpResponseToClient.badRequestErrorHttpResponse({
         message: serverMessages['auth']['getGoogleUser'][LocaleEnum['en-US']],
+        logMessage: err.message,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    }
+  }
+
+  @get('apple-login-url')
+  @response(200, {
+    description: 'Apple URL',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+      data: {
+        properties: {
+          url: {type: 'string'}
+        }
+      }
+    }
+  })
+  async getAppleLoginPageUrl(
+    @param.query.string('invitation') invitationId?: string,
+    @param.query.string('client-redirect-uri') clientRedirectUri?: string,
+    @param.query.string('locale') locale?: LocaleEnum,
+  ): Promise<IHttpResponse> {
+    try {
+
+      const clientRedirectUriParam = clientRedirectUri ?
+        `clientRedirectUri=${clientRedirectUri}` : ''
+      const invitationParam = invitationId ? `&invitationId=${invitationId}` : ''
+
+      const url = await this.authService.getOAuthLoginPageURL(
+        this.appleOAuth, `${clientRedirectUriParam}${invitationParam}`
+      )
+
+      return HttpResponseToClient.okHttpResponse({
+        data: {url},
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    } catch (err) {
+
+      return HttpResponseToClient.badRequestErrorHttpResponse({
+        message: serverMessages['auth']['getAppleUrl'][locale ?? LocaleEnum['pt-BR']],
+        logMessage: err.message,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    }
+  }
+
+  @visibility(OperationVisibility.UNDOCUMENTED)
+  @get('auth/apple')
+  async handleAppleCodeAndReturnToken(
+    @param.query.string('code') code: string,
+    @param.query.string('state') state?: string,
+  ): Promise<void | IHttpResponse> {
+    try {
+
+      const appleUser = await this.authService.getOAuthUser(this.appleOAuth, code)
+
+      const invitationId = new URLSearchParams(state).get('invitationId')
+
+      const token = this.authService.createOAuthToken(this.appleOAuth, appleUser, invitationId)
+
+      const clientRedirectUri = new URLSearchParams(state).get('clientRedirectUri')
+      this.httpResponse.redirect(`${clientRedirectUri}?token=${token}`)
+
+    } catch (err) {
+
+      return HttpResponseToClient.badRequestErrorHttpResponse({
+        message: serverMessages['auth']['getAppleUser'][LocaleEnum['en-US']],
         logMessage: err.message,
         request: this.httpRequest,
         response: this.httpResponse,

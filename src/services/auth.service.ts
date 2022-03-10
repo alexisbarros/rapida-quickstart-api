@@ -8,7 +8,7 @@ import {Company} from '../models/company.model'
 import {PermissionGroup} from '../models/permission-group.model'
 import {Person} from '../models/person.model'
 import {User} from '../models/user.model'
-import {CompanyRepository, InvitationRepository, PersonRepository, UserHasPermissionGroupsRepository, UserRepository} from '../repositories'
+import {CompanyRepository, InvitationRepository, PermissionGroupRepository, PersonRepository, UserHasPermissionGroupsRepository, UserRepository} from '../repositories'
 import {theDatesMatch} from '../utils/date-manipulation-functions'
 import {getUserType, UserTypesEnum} from '../utils/general-functions'
 import {serverMessages} from '../utils/server-messages'
@@ -22,6 +22,7 @@ export class AuthService {
     @repository(CompanyRepository) private companyRepository: CompanyRepository,
     @repository(InvitationRepository) private invitationRepository: InvitationRepository,
     @repository(UserHasPermissionGroupsRepository) private userHasPermissionGroupRepository: UserHasPermissionGroupsRepository,
+    @repository(PermissionGroupRepository) private permissionGroupRepository: PermissionGroupRepository,
   ) { }
 
   public async getOAuthLoginPageURL(oAuth: IOAuthLogin, params?: string): Promise<string> {
@@ -41,20 +42,24 @@ export class AuthService {
     const {email, googleId, invitationId} = userLoginInfo
 
     const permissionGroupId = invitationId ?
-      await this.getPermissionGroupIdFromInvitation(invitationId, email!) : null
+      await this.getPermissionGroupIdFromInvitation(invitationId, email!) :
+      await this.getDefaultPermissionGroupId(projectId)
 
     let user = await this.findUserWithPermissions(email!, projectId!, googleId!)
     if (!user) return null
 
-    if (invitationId) {
-      const userHasPermissionGroup = user.permissionGroups?.find(permissionGroup => permissionGroup._id === permissionGroupId)
-      if (!userHasPermissionGroup) {
-        await this.giveTheUserPermission(permissionGroupId!, user._id!)
-        user = await this.findUserWithPermissions(email!, projectId!, googleId!)
+    const userHasPermissionGroup = user.permissionGroups?.find(permissionGroup => permissionGroup._id === permissionGroupId)
+    if (!userHasPermissionGroup) {
+
+      await this.giveTheUserPermission(permissionGroupId!, user._id!)
+      user = await this.findUserWithPermissions(email!, projectId!, googleId!)
+
+      if (invitationId) {
         await this.invitationRepository.updateById(invitationId, {
           email, permissionGroupId: permissionGroupId!, _deletedAt: new Date()
         })
       }
+
     }
 
     return {
@@ -135,6 +140,18 @@ export class AuthService {
     if (invitation.email !== email) throw new Error(serverMessages['auth']['emailInvitationIncorrect'][locale ?? LocaleEnum['pt-BR']])
 
     else return invitation.permissionGroupId
+
+  }
+
+  private async getDefaultPermissionGroupId(projectId: string): Promise<string | undefined> {
+
+    const defaultPermissionGroup: PermissionGroup | null = await this.permissionGroupRepository.findOne({
+      where: {
+        and: [{projectId}, {isAdminPermission: true}]
+      }
+    })
+
+    return defaultPermissionGroup?._id
 
   }
 

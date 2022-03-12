@@ -104,7 +104,10 @@ export class AuthService {
 
   private async getOwnerNamesOfPermissionGroups(user: User): Promise<PermissionGroup[] | undefined> {
 
-    const permissionGroupsOwnerIds = user?.permissionGroups?.map(permissioGroup => permissioGroup._ownerId)
+    const permissionGroupsOwnerIds = user?.permissionGroups?.map(permissionGroup => {
+      if (permissionGroup.isAdminPermission) return user._id
+      return permissionGroup._ownerId
+    })
 
     let whereCondition = permissionGroupsOwnerIds ?
       {
@@ -120,15 +123,16 @@ export class AuthService {
 
     const permissionsGroupsOwners = await this.userRepository.find(whereCondition)
 
-    return user?.permissionGroups?.map(permissioGroup => {
-      const owner = permissionsGroupsOwners.find((permissionGroupOwner) =>
-        permissionGroupOwner._id?.toString() === permissioGroup._ownerId?.toString()
-      )
-      permissioGroup.owner = {
+    return user?.permissionGroups?.map(permissionGroup => {
+      const owner = permissionsGroupsOwners.find((permissionGroupOwner) => {
+        const ownerId = permissionGroup.isAdminPermission ? user._id : permissionGroup._ownerId
+        return permissionGroupOwner._id?.toString() === ownerId?.toString()
+      })
+      permissionGroup.owner = {
         _id: owner?._id,
         name: owner?.person.name ?? owner?.company.tradeName,
       }
-      return permissioGroup
+      return permissionGroup
     })
 
   }

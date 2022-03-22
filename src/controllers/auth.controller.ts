@@ -12,7 +12,7 @@ import {
 import {URLSearchParams} from 'url';
 import {Signup} from '../entities/signup.entity';
 import {LocaleEnum} from '../enums/locale.enum';
-import {AppleOAuthImplementation} from '../implementations/apple-oauth.implementation';
+import {AppleOAuthImplementation, IAppleBodySigninReturn} from '../implementations/apple-oauth.implementation';
 import {GoogleOAuthImplementation} from '../implementations/google-oauth.implementation';
 import {HttpDocumentation, HttpResponseToClient, JwtToken} from '../implementations/index';
 import {ProfileFromAPIImplementation} from '../implementations/profile-from-api.implementation';
@@ -165,20 +165,19 @@ export class AuthController {
   }
 
   @visibility(OperationVisibility.UNDOCUMENTED)
-  @get('auth/apple')
+  @post('auth/apple')
   async handleAppleCodeAndReturnToken(
-    @param.query.string('code') code: string,
-    @param.query.string('state') state?: string,
+    @requestBody() body: IAppleBodySigninReturn,
   ): Promise<void | IHttpResponse> {
     try {
 
-      const appleUser = await this.authService.getOAuthUser(this.appleOAuth, code)
+      const appleUser = await this.authService.getOAuthUser(this.appleOAuth, body.code)
 
-      const invitationId = new URLSearchParams(state).get('invitationId')
+      const invitationId = new URLSearchParams(body.state).get('invitationId')
 
       const token = this.authService.createOAuthToken(this.appleOAuth, appleUser, invitationId)
 
-      const clientRedirectUri = new URLSearchParams(state).get('clientRedirectUri')
+      const clientRedirectUri = new URLSearchParams(body.state).get('clientRedirectUri')
       this.httpResponse.redirect(`${clientRedirectUri}?token=${token}`)
 
     } catch (err) {

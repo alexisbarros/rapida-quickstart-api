@@ -9,6 +9,12 @@ interface IAppleAuthorizationUrlConfig {
   scope?: ('email' | 'name')[];
   state?: string;
   nonce?: string;
+  response_mode?: string;
+}
+
+export interface IAppleBodySigninReturn {
+  state: string;
+  code: string;
 }
 
 export class AppleOAuthImplementation implements IOAuthLogin {
@@ -36,6 +42,7 @@ export class AppleOAuthImplementation implements IOAuthLogin {
         redirectUri: `${process.env.OAUTH_REDIRECT_URI}/auth/apple`,
         scope: ['name', 'email'],
         state: params,
+        response_mode: 'query'
       }
 
       config.nonce = !config.nonce ? generateUniqueId() : config.nonce;

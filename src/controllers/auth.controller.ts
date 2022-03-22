@@ -167,17 +167,23 @@ export class AuthController {
   @visibility(OperationVisibility.UNDOCUMENTED)
   @post('auth/apple')
   async handleAppleCodeAndReturnToken(
-    @requestBody() body: IAppleBodySigninReturn,
+    @requestBody({
+      content: {
+        'application/x-www-form-urlencoded': {
+          schema: {type: 'object'},
+        }
+      }
+    }) data: IAppleBodySigninReturn,
   ): Promise<void | IHttpResponse> {
     try {
 
-      const appleUser = await this.authService.getOAuthUser(this.appleOAuth, body.code)
+      const appleUser = await this.authService.getOAuthUser(this.appleOAuth, data.code)
 
-      const invitationId = new URLSearchParams(body.state).get('invitationId')
+      const invitationId = new URLSearchParams(data.state).get('invitationId')
 
       const token = this.authService.createOAuthToken(this.appleOAuth, appleUser, invitationId)
 
-      const clientRedirectUri = new URLSearchParams(body.state).get('clientRedirectUri')
+      const clientRedirectUri = new URLSearchParams(data.state).get('clientRedirectUri')
       this.httpResponse.redirect(`${clientRedirectUri}?token=${token}`)
 
     } catch (err) {

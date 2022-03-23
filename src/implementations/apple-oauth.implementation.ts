@@ -29,7 +29,7 @@ export class AppleOAuthImplementation implements IOAuthLogin {
       teamId: process.env.APPLE_TEAM_ID as string,
       keyIdentifier: process.env.APPLE_KEY_IDENTIFIER as string,
       // privateKeyPath: process.env.APPLE_KEY_PATH as string,
-      privateKey: process.env.APPLE_KEY as string
+      privateKey: process.env.APPLE_KEY
     }
     this.appleSignIn = new AppleSignIn(this.options)
     this.expirationAuthToken = parseInt(process.env.APPLE_EXPIRATION_AUTH_TOKEN_IN_SECONDS as string) || 300

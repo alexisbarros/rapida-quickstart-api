@@ -40,6 +40,8 @@ export class AuthService {
   public async login(userLoginInfo: ILoginUserInfo, projectId: string): Promise<ILoginResponse | null> {
 
     const {email, googleId, appleId, invitationId} = userLoginInfo
+    console.log(userLoginInfo)
+    console.log(appleId)
 
     const permissionGroupId = invitationId ?
       await this.getPermissionGroupIdFromInvitation(invitationId, email!) :
@@ -131,7 +133,7 @@ export class AuthService {
       })
       permissionGroup.owner = {
         _id: owner?._id,
-        name: owner?.person.name ?? owner?.company.tradeName,
+        name: owner?.person?.name ?? owner?.company?.tradeName,
       }
       return permissionGroup
     })

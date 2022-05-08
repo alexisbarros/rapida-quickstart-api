@@ -1,4 +1,5 @@
 import {inject, service} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {
   get,
   getModelSchemaRef,
@@ -19,7 +20,10 @@ import {ProfileFromAPIImplementation} from '../implementations/profile-from-api.
 import {IGetProfile, IOAuthLogin} from '../interfaces/auth.interface';
 import {IHttpResponse} from '../interfaces/http.interface';
 import {User} from '../models/user.model';
+import {CompanyRepository} from '../repositories/company.repository';
+import {PersonRepository} from '../repositories/person.repository';
 import {AuthService} from '../services';
+import {UserTypesEnum} from '../utils/general-functions';
 import {serverMessages} from './../utils/server-messages';
 
 export class AuthController {
@@ -33,6 +37,9 @@ export class AuthController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @service(AuthService) private authService: AuthService,
+
+    @repository(PersonRepository) private personRepository: PersonRepository,
+    @repository(CompanyRepository) private companyRepository: CompanyRepository,
   ) {
     this.googleOAuth = new GoogleOAuthImplementation()
     this.appleOAuth = new AppleOAuthImplementation()
@@ -386,6 +393,93 @@ export class AuthController {
 
       return HttpResponseToClient.badRequestErrorHttpResponse({
         message: err.message,
+        logMessage: err.message,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    }
+  }
+
+  @get('verify-jwt-authorization')
+  @response(200, {
+    description: 'JWT is ok',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+      data: {}
+    }
+  })
+  async verifyJwtAuthorization(
+    @param.query.string('token') token: string,
+    @param.query.string('locale') locale?: LocaleEnum,
+  ): Promise<IHttpResponse | undefined> {
+    try {
+
+      const tokenVerified = JwtToken.verifyAuthToken(
+        token!, process.env.AUTENTIKIGO_SECRET!,
+        this.httpRequest, this.httpResponse, locale
+      )
+      if (!tokenVerified) return
+
+      return HttpResponseToClient.okHttpResponse({
+        data: tokenVerified,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    } catch (err) {
+
+      return HttpResponseToClient.badRequestErrorHttpResponse({
+        message: err.message,
+        logMessage: err.message,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    }
+  }
+
+  @get('get-profile')
+  @response(200, {
+    description: 'Get Profile info',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+    }
+  })
+  async getUserProfile(
+    @param.query.string('userType') userType: UserTypesEnum,
+    @param.query.string('uniqueId') uniqueId: string,
+    @param.query.string('locale') locale?: LocaleEnum,
+  ): Promise<IHttpResponse | undefined> {
+    try {
+
+      // const tokenVerified = JwtToken.verifyAuthToken(
+      //   this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
+      //   this.httpRequest, this.httpResponse, locale
+      // )
+      // if (!tokenVerified) throw new Error(serverMessages['httpResponse']['unauthorizedError'][locale ?? LocaleEnum['pt-BR']])
+
+      const profile =
+        await this[`${userType}Repository`].findOne({where: {uniqueId}}) ??
+        await this.getProfile.getFullProfileInfo(uniqueId, userType)
+
+      if (!profile) throw new Error(serverMessages['auth']['uniqueIdNotFound'][locale ?? LocaleEnum['pt-BR']])
+
+      return HttpResponseToClient.okHttpResponse({
+        data: profile ?? {},
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    } catch (err) {
+
+      return HttpResponseToClient.badRequestErrorHttpResponse({
         logMessage: err.message,
         locale,
         request: this.httpRequest,

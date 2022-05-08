@@ -10,6 +10,7 @@ import {
   RestBindings,
   visibility
 } from '@loopback/rest';
+import jwt from 'jsonwebtoken';
 import {URLSearchParams} from 'url';
 import {Signup} from '../entities/signup.entity';
 import {LocaleEnum} from '../enums/locale.enum';
@@ -402,6 +403,49 @@ export class AuthController {
     }
   }
 
+  @visibility(OperationVisibility.UNDOCUMENTED)
+  @post('generate-jwt')
+  @response(200, {
+    description: 'JWT',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+      data: {type: 'string'}
+    }
+  })
+  async generateJwt(
+    @requestBody() data: any,
+    @param.query.string('locale') locale?: LocaleEnum,
+  ): Promise<IHttpResponse | undefined> {
+    try {
+
+      const token = jwt.sign(
+        data.payload,
+        process.env.AUTENTIKIGO_SECRET!, {
+        expiresIn: data.expiresIn || '5m'
+      })
+
+      return HttpResponseToClient.okHttpResponse({
+        data: token,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    } catch (err) {
+
+      return HttpResponseToClient.badRequestErrorHttpResponse({
+        message: err.message,
+        logMessage: err.message,
+        locale,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      })
+
+    }
+  }
+
+  @visibility(OperationVisibility.UNDOCUMENTED)
   @get('verify-jwt-authorization')
   @response(200, {
     description: 'JWT is ok',
@@ -443,6 +487,7 @@ export class AuthController {
     }
   }
 
+  @visibility(OperationVisibility.UNDOCUMENTED)
   @get('get-profile')
   @response(200, {
     description: 'Get Profile info',

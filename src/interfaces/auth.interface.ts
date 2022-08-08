@@ -4,6 +4,8 @@ import {PersonDTO} from '../dto/person.dto';
 import {AdditionalInfoModel} from '../entities/signup.entity';
 import {LocaleEnum} from '../enums/locale.enum';
 import {UserTypesEnum} from '../utils/general-functions';
+import {CompanyRepository} from './../repositories/company.repository';
+import {PersonRepository} from './../repositories/person.repository';
 import {IOAuthUser} from './user.interface';
 
 export interface ILoginUserInfo {
@@ -37,5 +39,10 @@ export interface IOAuthLogin {
 }
 
 export interface IGetProfile {
-  getFullProfileInfo(uniqueId: string, userType: UserTypesEnum, additionalInfo?: AdditionalInfoModel): Promise<PersonDTO | CompanyDTO | null>
+  getFullProfileInfo(
+    uniqueId: string,
+    userType: UserTypesEnum,
+    additionalInfo?: AdditionalInfoModel,
+    personCompanyRepository?: PersonRepository | CompanyRepository
+  ): Promise<PersonDTO | CompanyDTO | null>
 }

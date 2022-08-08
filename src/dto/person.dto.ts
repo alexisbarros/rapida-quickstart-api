@@ -29,16 +29,38 @@ export class PersonDTO implements Person {
   }
 
   getId() {
-    throw new Error('Method not implemented.');
+    return this._id;
   }
   getIdObject(): Object {
-    throw new Error('Method not implemented.');
+    return {_id: this._id};
   }
   toJSON(): Object {
-    throw new Error('Method not implemented.');
+    return {
+      _id: this._id,
+      name: this.name,
+      uniqueId: this.uniqueId,
+      birthday: this.birthday,
+      gender: this.gender,
+      mother: this.mother,
+      country: this.country,
+      username: this.username,
+      nickname: this.nickname,
+      genderIdentity: this.genderIdentity,
+    }
   }
   toObject(options?: AnyObject): Object {
-    throw new Error('Method not implemented.');
+    return {
+      _id: this._id,
+      name: this.name,
+      uniqueId: this.uniqueId,
+      birthday: this.birthday,
+      gender: this.gender,
+      mother: this.mother,
+      country: this.country,
+      username: this.username,
+      nickname: this.nickname,
+      genderIdentity: this.genderIdentity,
+    }
   }
 
 }

@@ -27,16 +27,34 @@ export class CompanyDTO implements Company {
   }
 
   getId() {
-    throw new Error('Method not implemented.');
+    return this._id;
   }
   getIdObject(): Object {
-    throw new Error('Method not implemented.');
+    return {_id: this._id};
   }
   toJSON(): Object {
-    throw new Error('Method not implemented.');
+    return {
+      _id: this._id,
+      corporateName: this.corporateName,
+      tradeName: this.tradeName,
+      uniqueId: this.uniqueId,
+      birthday: this.birthday,
+      email: this.email,
+      responsible: this.responsible,
+      businessActivityCode: this.businessActivityCode,
+    }
   }
   toObject(options?: AnyObject): Object {
-    throw new Error('Method not implemented.');
+    return {
+      _id: this._id,
+      corporateName: this.corporateName,
+      tradeName: this.tradeName,
+      uniqueId: this.uniqueId,
+      birthday: this.birthday,
+      email: this.email,
+      responsible: this.responsible,
+      businessActivityCode: this.businessActivityCode,
+    }
   }
 
 }

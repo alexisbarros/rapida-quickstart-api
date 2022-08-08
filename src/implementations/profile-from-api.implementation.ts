@@ -5,15 +5,22 @@ import {IGetProfile} from '../interfaces/auth.interface';
 import {ICompanyFromAPI} from '../interfaces/company.interface';
 import {IPersonFromAPI} from '../interfaces/person.interface';
 import {UserTypesEnum} from '../utils/general-functions';
+import {CompanyRepository} from './../repositories/company.repository';
+import {PersonRepository} from './../repositories/person.repository';
 const fetch = require('node-fetch')
 
 export class ProfileFromAPIImplementation implements IGetProfile {
 
-  async getFullProfileInfo(uniqueId: string, userType: UserTypesEnum, additionalInfo?: AdditionalInfoModel): Promise<PersonDTO | CompanyDTO | null> {
+  async getFullProfileInfo(
+    uniqueId: string,
+    userType: UserTypesEnum,
+    additionalInfo?: AdditionalInfoModel,
+    personCompanyRepository?: PersonRepository | CompanyRepository,
+  ): Promise<PersonDTO | CompanyDTO | null> {
 
     let dataFromCpfCnpjApi = await fetch(`${process.env.API_CPF_CNPJ}/${userType === 'person' ? 2 : 6}/${uniqueId.replace(/\D/g, "")}`)
 
-    dataFromCpfCnpjApi = dataFromCpfCnpjApi.json()
+    dataFromCpfCnpjApi = await dataFromCpfCnpjApi.json()
 
     if (!dataFromCpfCnpjApi.status) return null
 
@@ -23,6 +30,9 @@ export class ProfileFromAPIImplementation implements IGetProfile {
       userType === 'person' ?
         new PersonDTO({dataFromApi: dataTypedFromCpfCnpjApi as IPersonFromAPI, additionalInfo: additionalInfo as AdditionalInfoModel}) :
         new CompanyDTO({dataFromApi: dataTypedFromCpfCnpjApi as ICompanyFromAPI, additionalInfo: additionalInfo as AdditionalInfoModel})
+
+    if (personCompanyRepository)
+      await personCompanyRepository.create({...profileDTO})
 
     return profileDTO
   }

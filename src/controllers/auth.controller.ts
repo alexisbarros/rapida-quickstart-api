@@ -511,7 +511,7 @@ export class AuthController {
 
       const profile =
         await this[`${userType}Repository`].findOne({where: {uniqueId}}) ??
-        await this.getProfile.getFullProfileInfo(uniqueId, userType)
+        await this.getProfile.getFullProfileInfo(uniqueId, userType, undefined, this[`${userType}Repository`])
 
       if (!profile) throw new Error(serverMessages['auth']['uniqueIdNotFound'][locale ?? LocaleEnum['pt-BR']])
 

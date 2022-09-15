@@ -503,11 +503,11 @@ export class AuthController {
   ): Promise<IHttpResponse | undefined> {
     try {
 
-      // const tokenVerified = JwtToken.verifyAuthToken(
-      //   this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
-      //   this.httpRequest, this.httpResponse, locale
-      // )
-      // if (!tokenVerified) throw new Error(serverMessages['httpResponse']['unauthorizedError'][locale ?? LocaleEnum['pt-BR']])
+      const tokenVerified = JwtToken.verifyAuthToken(
+        this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
+        this.httpRequest, this.httpResponse, locale
+      )
+      if (!tokenVerified) throw new Error(serverMessages['httpResponse']['unauthorizedError'][locale ?? LocaleEnum['pt-BR']])
 
       const profile =
         await this[`${userType}Repository`].findOne({where: {uniqueId}}) ??

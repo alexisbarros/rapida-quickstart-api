@@ -503,6 +503,8 @@ export class AuthController {
   ): Promise<IHttpResponse | undefined> {
     try {
 
+      if (!userType || !uniqueId) throw new Error('userType and uniqueId are required')
+
       const tokenVerified = JwtToken.verifyAuthToken(
         this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
         this.httpRequest, this.httpResponse, locale

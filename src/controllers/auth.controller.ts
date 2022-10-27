@@ -511,6 +511,8 @@ export class AuthController {
       )
       if (!tokenVerified) throw new Error(serverMessages['httpResponse']['unauthorizedError'][locale ?? LocaleEnum['pt-BR']])
 
+      uniqueId = uniqueId.replace(/\D/g, "")
+
       const profile =
         await this[`${userType}Repository`].findOne({where: {uniqueId}}) ??
         await this.getProfile.getFullProfileInfo(uniqueId, userType, undefined, this[`${userType}Repository`])

@@ -1,7 +1,8 @@
 export interface IPersonFromAPI {
-  nome: string,
-  cpf: string,
-  nascimento: string,
-  genero: string,
-  mae: string,
+  name: string,
+  uniqueId: string,
+  birthday: Date,
+  gender: string,
+  mother: string,
+  country: string,
 }

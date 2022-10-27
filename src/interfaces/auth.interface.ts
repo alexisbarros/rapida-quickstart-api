@@ -43,6 +43,7 @@ export interface IGetProfile {
     uniqueId: string,
     userType: UserTypesEnum,
     additionalInfo?: AdditionalInfoModel,
-    personCompanyRepository?: PersonRepository | CompanyRepository
+    personCompanyRepository?: PersonRepository | CompanyRepository,
+    countryId?: string,
   ): Promise<PersonDTO | CompanyDTO | null>
 }

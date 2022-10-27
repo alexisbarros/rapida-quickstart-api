@@ -1,10 +1,10 @@
 export interface ICompanyFromAPI {
-  cnpj: string,
-  razao: string,
-  fantasia: string,
-  inicioAtividade: string,
-  responsavel: string,
-  cnae: IBusinessActivityCode[],
+  uniqueId: string,
+  corporateName: string,
+  tradeName: string,
+  birthday: Date,
+  responsible: string,
+  businessActivityCode: IBusinessActivityCode[],
   email: string,
 }
 

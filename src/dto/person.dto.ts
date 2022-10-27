@@ -2,7 +2,6 @@ import {AnyObject} from '@loopback/repository';
 import {AdditionalInfoModel} from '../entities/signup.entity';
 import {IPersonFromAPI} from '../interfaces/person.interface';
 import {Person} from '../models';
-import {convertBirthdayStringToDate} from '../utils/date-manipulation-functions';
 
 export class PersonDTO implements Person {
   _id?: string | undefined;
@@ -17,13 +16,12 @@ export class PersonDTO implements Person {
   genderIdentity?: string | undefined;
 
   constructor({dataFromApi, additionalInfo}: {dataFromApi: IPersonFromAPI, additionalInfo: AdditionalInfoModel}) {
-    const birthday = convertBirthdayStringToDate(dataFromApi.nascimento);
-    this.name = dataFromApi.nome;
-    this.uniqueId = dataFromApi.cpf.replace(/\D/g, "");
-    this.birthday = birthday;
-    this.gender = dataFromApi.genero;
-    this.mother = dataFromApi.mae;
-    this.country = 'br';
+    this.name = dataFromApi.name;
+    this.uniqueId = dataFromApi.uniqueId;
+    this.birthday = dataFromApi.birthday;
+    this.gender = dataFromApi.gender;
+    this.mother = dataFromApi.mother;
+    this.country = dataFromApi.country;
     this.nickname = additionalInfo?.personInfo?.nickname;
     this.genderIdentity = additionalInfo?.personInfo?.genderIdentity;
   }

@@ -499,6 +499,7 @@ export class AuthController {
   async getUserProfile(
     @param.query.string('userType') userType: UserTypesEnum,
     @param.query.string('uniqueId') uniqueId: string,
+    @param.query.string('country') countryId?: string,
     @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse | undefined> {
     try {
@@ -515,7 +516,7 @@ export class AuthController {
 
       const profile =
         await this[`${userType}Repository`].findOne({where: {uniqueId}}) ??
-        await this.getProfile.getFullProfileInfo(uniqueId, userType, undefined, this[`${userType}Repository`])
+        await this.getProfile.getFullProfileInfo(uniqueId, userType, undefined, this[`${userType}Repository`], countryId)
 
       if (!profile) throw new Error(serverMessages['auth']['uniqueIdNotFound'][locale ?? LocaleEnum['pt-BR']])
 

@@ -2,7 +2,6 @@ import {AnyObject} from '@loopback/repository';
 import {AdditionalInfoModel} from '../entities/signup.entity';
 import {IBusinessActivityCode, ICompanyFromAPI} from '../interfaces/company.interface';
 import {Company} from '../models';
-import {convertBirthdayStringToDate} from '../utils/date-manipulation-functions';
 
 export class CompanyDTO implements Company {
   _id?: string | undefined;
@@ -16,14 +15,13 @@ export class CompanyDTO implements Company {
 
 
   constructor({dataFromApi, additionalInfo}: {dataFromApi: ICompanyFromAPI, additionalInfo: AdditionalInfoModel}) {
-    const birthday = convertBirthdayStringToDate(dataFromApi.inicioAtividade);
-    this.corporateName = dataFromApi.razao;
-    this.tradeName = dataFromApi.fantasia;
-    this.uniqueId = dataFromApi.cnpj.replace(/\D/g, "");
-    this.birthday = birthday;
+    this.corporateName = dataFromApi.corporateName;
+    this.tradeName = dataFromApi.tradeName;
+    this.uniqueId = dataFromApi.uniqueId;
+    this.birthday = dataFromApi.birthday;
     this.email = dataFromApi.email;
-    this.responsible = dataFromApi.responsavel;
-    this.businessActivityCode = dataFromApi.cnae;
+    this.responsible = dataFromApi.responsible;
+    this.businessActivityCode = dataFromApi.businessActivityCode;
   }
 
   getId() {

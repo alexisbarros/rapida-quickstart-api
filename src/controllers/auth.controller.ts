@@ -520,6 +520,8 @@ export class AuthController {
 
       if (!profile) throw new Error(serverMessages['auth']['uniqueIdNotFound'][locale ?? LocaleEnum['pt-BR']])
 
+      profile.birthday = new Date(profile.birthday.toISOString().substring(0, 10));
+
       return HttpResponseToClient.okHttpResponse({
         data: profile ?? {},
         locale,

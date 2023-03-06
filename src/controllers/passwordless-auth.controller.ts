@@ -1,5 +1,4 @@
 import {inject, service} from '@loopback/core';
-import {repository} from '@loopback/repository';
 import {
   get, param,
   post,
@@ -9,33 +8,25 @@ import {
 import {LocaleEnum} from '../enums/locale.enum';
 import {HttpResponseToClient, JwtToken} from '../implementations/index';
 import {IPasswordlessBody, PasswordlessAuthImplementation} from '../implementations/passwordless-auth.implementation';
-import {ProfileFromAPIImplementation} from '../implementations/profile-from-api.implementation';
-import {IGetProfile, IPasswordlessAuth} from '../interfaces/auth.interface';
+import {IPasswordlessAuth} from '../interfaces/auth.interface';
 import {IHttpResponse} from '../interfaces/http.interface';
-import {CompanyRepository} from '../repositories/company.repository';
-import {PersonRepository} from '../repositories/person.repository';
 import {AuthService} from '../services';
 import {serverMessages} from '../utils/server-messages';
 
 export class PasswordlessAuthController {
 
   private passwordlessAuth: IPasswordlessAuth
-  private getProfile: IGetProfile
 
   constructor(
     @inject(RestBindings.Http.REQUEST) private httpRequest: Request,
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @service(AuthService) private authService: AuthService,
-
-    @repository(PersonRepository) private personRepository: PersonRepository,
-    @repository(CompanyRepository) private companyRepository: CompanyRepository,
   ) {
     this.passwordlessAuth = new PasswordlessAuthImplementation()
-    this.getProfile = new ProfileFromAPIImplementation()
   }
 
-  @post('auth/passwordless/send-verification')
+  @post('passwordless/send-verification')
   async sendPasswordlessVerificationCode(
     @requestBody({
       content: {
@@ -73,7 +64,7 @@ export class PasswordlessAuthController {
     }
   }
 
-  @get('auth/passwordless/signup')
+  @get('passwordless/signup')
   @response(200, {
     description: 'User has authorization',
     properties: {
@@ -134,7 +125,7 @@ export class PasswordlessAuthController {
     }
   }
 
-  @get('auth/passwordless/login')
+  @get('passwordless/login')
   @response(200, {
     description: 'User has authorization',
     properties: {

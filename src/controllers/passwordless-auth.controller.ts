@@ -212,7 +212,7 @@ export class PasswordlessAuthController {
         statusCode: tokenAndUser?.authToken ? 200 : 601,
         request: this.httpRequest,
         response: this.httpResponse,
-      })
+      });
 
     } catch (err) {
 

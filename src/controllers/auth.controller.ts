@@ -523,7 +523,7 @@ export class AuthController {
       return HttpResponseToClient.okHttpResponse({
         data: {
           ...(profile ?? {}),
-          birthday: `${profile.birthday.toISOString().substring(0, 10)}T12:00:00.000+00:00`
+          birthday: `${profile.birthday!.toISOString().substring(0, 10)}T12:00:00.000+00:00`
         },
         locale,
         request: this.httpRequest,

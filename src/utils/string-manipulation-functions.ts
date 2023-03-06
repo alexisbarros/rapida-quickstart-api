@@ -6,3 +6,7 @@ export function hideEmailString(email: string) {
   }
   return hiddenEmail;
 }
+
+export function getOnlyNumberFromString(term?: string) : string {
+  return (term ?? '').replace(/\D/g, "");
+}

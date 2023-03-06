@@ -187,7 +187,7 @@ export class AuthService {
       await this[`${userType}Repository`].findOne({where: {uniqueId: data.uniqueId}}) ??
       await this.createProfile({userType, ...data}, getProfile, locale);
 
-    if (!theDatesMatch(profile.birthday, data.birthday))
+    if (!theDatesMatch(profile.birthday!, data.birthday))
       throw new Error(serverMessages['auth']['birthdayIncorrect'][locale ?? LocaleEnum['pt-BR']])
 
     if (profile.userId) {

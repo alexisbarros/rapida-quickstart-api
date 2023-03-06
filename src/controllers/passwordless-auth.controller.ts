@@ -1,17 +1,35 @@
 import {inject, service} from '@loopback/core';
 import {
-  get, param,
-  post,
-  Request, requestBody, response, Response,
-  RestBindings
+  get, param, post, Request, requestBody, response, Response,
+  RestBindings,
+  SchemaObject
 } from '@loopback/rest';
 import {LocaleEnum} from '../enums/locale.enum';
 import {HttpResponseToClient, JwtToken} from '../implementations/index';
-import {IPasswordlessBody, PasswordlessAuthImplementation} from '../implementations/passwordless-auth.implementation';
-import {IPasswordlessAuth} from '../interfaces/auth.interface';
+import {PasswordlessAuthImplementation} from '../implementations/passwordless-auth.implementation';
+import {IPasswordlessAuth, IPasswordlessUserData} from '../interfaces/auth.interface';
 import {IHttpResponse} from '../interfaces/http.interface';
-import {AuthService} from '../services';
+import {PasswordlessAuthService} from '../services/passwordless-auth.service';
 import {serverMessages} from '../utils/server-messages';
+import {getOnlyNumberFromString} from '../utils/string-manipulation-functions';
+
+const PasswordlessSignupSchema: SchemaObject = {
+  type: 'object',
+  required: ['phoneNumber', 'verificationCode', 'name'],
+  properties: {
+    phoneNumber: { type: 'string' },
+    verificationCode: { type: 'string' },
+    name: { type: 'string' },
+    uniqueId: { type: 'string' },
+    termsAcceptanceDate: {type: 'number'},
+    receivesSms: {type: 'boolean'},
+    receivesWhatsapp: {type: 'boolean'},
+    picture: {type: 'string'},
+    zipcode: {type: 'string'},
+    birthdayTimestamp: {type: 'number'},
+    gender: {type: 'string'}
+  },
+};
 
 export class PasswordlessAuthController {
 
@@ -21,26 +39,34 @@ export class PasswordlessAuthController {
     @inject(RestBindings.Http.REQUEST) private httpRequest: Request,
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
-    @service(AuthService) private authService: AuthService,
+    @service(PasswordlessAuthService) private passwordlessAuthService: PasswordlessAuthService,
   ) {
     this.passwordlessAuth = new PasswordlessAuthImplementation()
   }
 
-  @post('passwordless/send-verification')
+  @get('passwordless/send-verification')
+  @response(200, {
+    description: 'Json web token',
+    properties: {
+      message: {type: 'string'},
+      statusCode: {type: 'number'},
+      data: {
+        properties: {
+          authToken: {type: 'string'},
+        }
+      }
+    }
+  })
   async sendPasswordlessVerificationCode(
-    @requestBody({
-      content: {
-        'application/json': {},
-      },
-    }) data: IPasswordlessBody,
+    @param.query.string('phone-number') phoneNumber: string,
   ): Promise<IHttpResponse> {
     try {
 
-      const token = this.authService.createPasswordlessToken();
+      const token = this.passwordlessAuthService.createPasswordlessToken();
 
-      const authToken = await this.authService.sendPasswordlessToken(
+      const authToken = await this.passwordlessAuthService.sendPasswordlessToken(
         this.passwordlessAuth,
-        data.phoneNumber,
+        phoneNumber,
         token,
       );
 
@@ -64,7 +90,7 @@ export class PasswordlessAuthController {
     }
   }
 
-  @get('passwordless/signup')
+  @post('passwordless/signup')
   @response(200, {
     description: 'User has authorization',
     properties: {
@@ -85,10 +111,22 @@ export class PasswordlessAuthController {
     }
   })
   async passwordlessSignup(
-    @param.query.string('phone-number') phoneNumber: string,
-    @param.query.string('verification-code') verificationCode: string,
+    @requestBody({
+      description: 'Signup form',
+      required: true,
+      content: {
+        'application/json': {schema: PasswordlessSignupSchema},
+      },
+    }) data: any,
+    @param.query.string('locale') locale?: LocaleEnum,
   ): Promise<IHttpResponse> {
     try {
+
+      const userData: IPasswordlessUserData = {...data}
+
+      const personData = data
+      delete personData['phoneNumber']
+      delete personData['verificationCode']
 
       const tokenVerified = JwtToken.verifyAuthToken(
         this.httpRequest.headers.authorization!, process.env.AUTENTIKIGO_SECRET!,
@@ -101,10 +139,10 @@ export class PasswordlessAuthController {
       let user;
 
       if(
-        loginUserInfo.phoneNumber?.replace("+", "").trim() === phoneNumber.trim() &&
-        loginUserInfo.verificationCode?.trim() === verificationCode.trim()
+        getOnlyNumberFromString(loginUserInfo.phoneNumber) === getOnlyNumberFromString(userData.phoneNumber) &&
+        getOnlyNumberFromString(loginUserInfo.verificationCode) === getOnlyNumberFromString(userData.verificationCode)
       ) {
-        user = await this.authService.passwordlessSignup(loginUserInfo);
+        user = await this.passwordlessAuthService.passwordlessSignup(userData, personData);
       } else throw new Error('Token incorrect')
 
       return HttpResponseToClient.okHttpResponse({
@@ -162,10 +200,10 @@ export class PasswordlessAuthController {
       let tokenAndUser;
 
       if(
-        loginUserInfo.phoneNumber?.replace("+", "").trim() === phoneNumber.trim() &&
-        loginUserInfo.verificationCode?.trim() === verificationCode.trim()
+        getOnlyNumberFromString(loginUserInfo.phoneNumber) === getOnlyNumberFromString(phoneNumber) &&
+        getOnlyNumberFromString(loginUserInfo.verificationCode) === getOnlyNumberFromString(verificationCode)
       ) {
-        tokenAndUser = await this.authService.passwordlessLogin(phoneNumber.trim());
+        tokenAndUser = await this.passwordlessAuthService.passwordlessLogin(phoneNumber.trim());
       } else throw new Error('Token incorrect')
 
       return HttpResponseToClient.okHttpResponse({

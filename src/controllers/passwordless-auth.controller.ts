@@ -204,7 +204,7 @@ export class PasswordlessAuthController {
         getOnlyNumberFromString(loginUserInfo.verificationCode) === getOnlyNumberFromString(verificationCode)
       ) {
         tokenAndUser = await this.passwordlessAuthService.passwordlessLogin(phoneNumber.trim());
-      } else throw new Error('Token incorrect')
+      } else throw new Error('Token incorrect');
 
       return HttpResponseToClient.okHttpResponse({
         data: {...tokenAndUser},

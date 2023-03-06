@@ -31,6 +31,20 @@ export class User extends Entity {
   email?: string;
 
   @property({
+    name: 'phoneNumber',
+    description: "The user's phone number",
+    type: 'string',
+    required: false,
+    jsonSchema: {
+      maxLength: 50,
+      errorMessage: {
+        maxLength: 'Phone number should not exceed 50 characters.',
+      },
+    }
+  })
+  phoneNumber?: string;
+
+  @property({
     name: 'googleId',
     description: "The user's google id",
     type: 'string',

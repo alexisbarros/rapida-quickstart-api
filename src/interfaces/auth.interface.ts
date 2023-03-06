@@ -12,6 +12,8 @@ export interface ILoginUserInfo {
   email?: string;
   googleId?: string;
   appleId?: string;
+  phoneNumber?: string;
+  verificationCode?: string;
   invitationId?: string;
 }
 
@@ -36,6 +38,11 @@ export interface IOAuthLogin {
   getOAuthLoginPageUrl(params?: string): Promise<string>,
   getOAuthUser(code?: string): Promise<IOAuthUser>,
   createOAuthToken(oAuthUser: IOAuthUser, invitationId?: string | null, clientRedirectUri?: string): string,
+}
+
+export interface IPasswordlessAuth {
+  sendVerificationCode(phoneNumber: string, verificationCode: string): Promise<string>,
+  createAuthToken(phoneNumber: string, verificationCode: string): string,
 }
 
 export interface IGetProfile {

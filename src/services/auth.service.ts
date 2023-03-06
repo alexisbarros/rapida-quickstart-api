@@ -2,7 +2,7 @@ import {repository} from '@loopback/repository'
 import jwt from 'jsonwebtoken'
 import {AdditionalInfoModel, Signup} from '../entities/signup.entity'
 import {LocaleEnum} from '../enums/locale.enum'
-import {IGetProfile, ILoginResponse, ILoginUserInfo, IOAuthLogin, IRefreshTokenResponse} from '../interfaces/auth.interface'
+import {IGetProfile, ILoginResponse, ILoginUserInfo, IOAuthLogin, IPasswordlessAuth, IRefreshTokenResponse} from '../interfaces/auth.interface'
 import {IOAuthUser} from '../interfaces/user.interface'
 import {Company} from '../models/company.model'
 import {PermissionGroup} from '../models/permission-group.model'
@@ -37,9 +37,18 @@ export class AuthService {
     return oAuth.createOAuthToken(oAuthUser, invitationId)
   }
 
+  public createPasswordlessToken(): string {
+    const token = Math.floor(100000 + Math.random() * 900000);
+    return token.toString();
+  }
+
+  public async sendPasswordlessToken(passwordless: IPasswordlessAuth, phoneNumber: string, token: string): Promise<string> {
+    return await passwordless.sendVerificationCode(phoneNumber, token);
+  }
+
   public async login(userLoginInfo: ILoginUserInfo, projectId: string): Promise<ILoginResponse | null> {
 
-    const {email, googleId, appleId, invitationId} = userLoginInfo
+    const { email, googleId, appleId, invitationId } = userLoginInfo
 
     const permissionGroupId = invitationId ?
       await this.getPermissionGroupIdFromInvitation(invitationId, email!) :
@@ -279,6 +288,63 @@ export class AuthService {
     }
 
     return {userId, ownerId}
+  }
+
+  /* Passwordless signup */
+  public async passwordlessSignup(userInfo: ILoginUserInfo, locale?: LocaleEnum): Promise<ILoginResponse> {
+
+    const newUser = await this.userRepository.create({
+      googleId: userInfo?.googleId,
+      appleId: userInfo?.appleId,
+      email: userInfo?.email,
+      phoneNumber: userInfo?.phoneNumber,
+    })
+
+    if (userInfo?.invitationId) {
+      const permissionGroupId = await this.getPermissionGroupIdFromInvitation(userInfo?.invitationId, userInfo?.email!, locale)
+      await this.giveTheUserPermission(permissionGroupId, newUser._id!)
+    }
+
+    const user = await this.userRepository.findById(newUser?._id, {include: ['person', 'company']})
+
+    return {
+      authToken: jwt.sign({
+        id: user?._id,
+      }, process.env.AUTENTIKIGO_SECRET!, {
+        expiresIn: '1d'
+      }),
+      authRefreshToken: jwt.sign({
+        id: user?._id,
+      }, process.env.AUTENTIKIGO_SECRET!, {
+        expiresIn: '7d'
+      }),
+      userData: user
+    }
+  }
+
+  /* Passwordless signup */
+  public async passwordlessLogin(phoneNumber: string): Promise<ILoginResponse | null> {
+
+    const user = await this.userRepository.findOne({
+      where: { phoneNumber: {like: phoneNumber} }
+    })
+
+    if (!user) return null
+
+    return {
+      authToken: jwt.sign({
+        id: user?._id,
+      }, process.env.AUTENTIKIGO_SECRET!, {
+        expiresIn: '1d'
+      }),
+      authRefreshToken: jwt.sign({
+        id: user?._id,
+      }, process.env.AUTENTIKIGO_SECRET!, {
+        expiresIn: '7d'
+      }),
+      userData: user
+    }
+
   }
 }
 

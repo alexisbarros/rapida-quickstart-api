@@ -89,7 +89,8 @@ export class PasswordlessAuthService {
   public async passwordlessLogin(phoneNumber: string): Promise<ILoginResponse | null> {
 
     const user = await this.userRepository.findOne({
-      where: { phoneNumber: {like: phoneNumber} }
+      where: { phoneNumber: {like: phoneNumber} },
+      include: ['person', 'company']
     })
 
     if (!user) return null

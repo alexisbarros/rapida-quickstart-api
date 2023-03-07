@@ -11,7 +11,7 @@ export class TwilioSendMessageImplementation implements ISendMessage {
       .create({
           body: messageData.body,
           from: process.env.TWILIO_PHONE_SENDER,
-          to: messageData.number,
+          to: `+55${messageData.number}`,
       })
 
     return message ? true : false;
@@ -22,7 +22,7 @@ export class TwilioSendMessageImplementation implements ISendMessage {
       .create({
           body: messageData.body,
           from: process.env.TWILIO_PHONE_SENDER,
-          to: messageData.number,
+          to: `+55${messageData.number}`,
       })
 
     return message ? true : false;

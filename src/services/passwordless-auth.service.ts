@@ -31,11 +31,17 @@ export class PasswordlessAuthService {
     personInfo: IPasswordlessPersonData
   ): Promise<ILoginResponse> {
 
+    const userAlreadyCreated = await this.userRepository.findOne({
+      where: {phoneNumber: userInfo?.phoneNumber}
+    });
+    if(userAlreadyCreated) throw new Error('User already created');
+
     const profile = personInfo.uniqueId ?
         await this.personRepository.findOne({where: {uniqueId: personInfo.uniqueId}}) ??
           await this.createProfile(personInfo)
         :
         await this.createProfile(personInfo);
+
 
     const newUser = await this.userRepository.create({
       phoneNumber: userInfo?.phoneNumber,
@@ -74,7 +80,6 @@ export class PasswordlessAuthService {
       return profileCreated
 
     } catch (err) {
-      console.log(err.message);
 
       throw new Error(serverMessages['auth']['createProfileError'][LocaleEnum['pt-BR']]);
 

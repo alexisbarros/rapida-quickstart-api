@@ -422,7 +422,7 @@ export class AuthController {
       const token = jwt.sign(
         data.payload,
         process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: data.expiresIn || '5m'
+        expiresIn: data.expiresIn || '1d'
       })
 
       return HttpResponseToClient.okHttpResponse({

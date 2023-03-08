@@ -75,12 +75,12 @@ export class AuthService {
       authToken: jwt.sign({
         id: user?._id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '5m'
+        expiresIn: '1d'
       }),
       authRefreshToken: jwt.sign({
         id: user?._id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '10m'
+        expiresIn: '7d'
       }),
       userData: user
     }
@@ -244,12 +244,12 @@ export class AuthService {
       authToken: jwt.sign({
         id: id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '5m'
+        expiresIn: '1d'
       }),
       authRefreshToken: jwt.sign({
         id: id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '10m'
+        expiresIn: '7d'
       })
     }
 

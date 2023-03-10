@@ -28,7 +28,7 @@ export class PasswordlessAuthImplementation implements IPasswordlessAuth {
     return sign(
       { phoneNumber, verificationCode},
       process.env.AUTENTIKIGO_SECRET!, {
-      expiresIn: '5m'
+      expiresIn: '1d'
     })
 
   }

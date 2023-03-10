@@ -75,12 +75,12 @@ export class AuthService {
       authToken: jwt.sign({
         id: user?._id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '5m'
+        expiresIn: '1d'
       }),
       authRefreshToken: jwt.sign({
         id: user?._id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '10m'
+        expiresIn: '7d'
       }),
       userData: user
     }
@@ -187,7 +187,7 @@ export class AuthService {
       await this[`${userType}Repository`].findOne({where: {uniqueId: data.uniqueId}}) ??
       await this.createProfile({userType, ...data}, getProfile, locale);
 
-    if (!theDatesMatch(profile.birthday, data.birthday))
+    if (!theDatesMatch(profile.birthday!, data.birthday))
       throw new Error(serverMessages['auth']['birthdayIncorrect'][locale ?? LocaleEnum['pt-BR']])
 
     if (profile.userId) {
@@ -244,12 +244,12 @@ export class AuthService {
       authToken: jwt.sign({
         id: id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '5m'
+        expiresIn: '1d'
       }),
       authRefreshToken: jwt.sign({
         id: id,
       }, process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: '10m'
+        expiresIn: '7d'
       })
     }
 

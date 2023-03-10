@@ -5,8 +5,8 @@ import {Request, Response, RestBindings} from '@loopback/rest';
 import {securityId, UserProfile} from '@loopback/security';
 import {LocaleEnum} from '../enums/locale.enum';
 import {JwtToken} from '../implementations';
+import {UserRepository} from '../repositories/user.repository';
 import {serverMessages} from '../utils/server-messages';
-import {UserRepository} from './../repositories/user.repository';
 
 @model()
 export class User implements UserProfile {

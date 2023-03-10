@@ -28,6 +28,24 @@ export interface IRefreshTokenResponse {
   authRefreshToken: string,
 }
 
+export interface IPasswordlessUserData {
+  phoneNumber: string;
+  verificationCode: string;
+  invitationId?: string;
+};
+
+export interface IPasswordlessPersonData {
+  name: string;
+  uniqueId?: string;
+  termsAcceptanceDate?: number,
+  receivesSms?: boolean,
+  receivesWhatsapp?: boolean,
+  picture?: string,
+  zipcode?: string,
+  birthdayTimestamp?: number,
+  gender?: string
+};
+
 export interface IAuthToken {
   verifyAuthToken(token: string, secret: string, request: Request, response: Response, locale?: LocaleEnum): boolean,
   getLoginUserInfoFromToken(token: string): ILoginUserInfo,

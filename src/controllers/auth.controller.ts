@@ -422,7 +422,7 @@ export class AuthController {
       const token = jwt.sign(
         data.payload,
         process.env.AUTENTIKIGO_SECRET!, {
-        expiresIn: data.expiresIn || '5m'
+        expiresIn: data.expiresIn || '1d'
       })
 
       return HttpResponseToClient.okHttpResponse({
@@ -523,7 +523,7 @@ export class AuthController {
       return HttpResponseToClient.okHttpResponse({
         data: {
           ...(profile ?? {}),
-          birthday: `${profile.birthday.toISOString().substring(0, 10)}T12:00:00.000+00:00`
+          birthday: `${profile.birthday!.toISOString().substring(0, 10)}T12:00:00.000+00:00`
         },
         locale,
         request: this.httpRequest,

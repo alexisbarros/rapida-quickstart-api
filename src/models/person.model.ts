@@ -20,33 +20,39 @@ export class Person extends Entity {
 
   @property({
     type: 'string',
-    required: true,
+    // required: true,
   })
-  uniqueId: string;
+  uniqueId?: string;
 
   @property({
     type: 'Date',
-    required: true,
+    // required: true,
   })
-  birthday: Date;
+  birthday?: Date;
+
+  @property({
+    type: 'number',
+    // required: true,
+  })
+  birthdayTimestamp?: number;
 
   @property({
     type: 'string',
-    required: true,
+    // required: true,
   })
-  gender: string;
+  gender?: string;
 
   @property({
     type: 'string',
-    required: true,
+    // required: true,
   })
-  mother: string;
+  mother?: string;
 
   @property({
     type: 'string',
-    required: true,
+    // required: true,
   })
-  country: string;
+  country?: string;
 
   @property({
     type: 'string',
@@ -67,6 +73,32 @@ export class Person extends Entity {
     type: 'string',
   })
   userId?: string;
+
+  // Rever se deve manter aqui as propriedades abaixo
+  @property({
+    type: 'number',
+  })
+  termsAcceptanceDate?: number;
+
+  @property({
+    type: 'boolean',
+  })
+  receivesSms?: boolean;
+
+  @property({
+    type: 'boolean',
+  })
+  receivesWhatsapp?: boolean;
+
+  @property({
+    type: 'string',
+  })
+  picture?: string;
+
+  @property({
+    type: 'string',
+  })
+  zipcode?: string;
 
   constructor(data?: Partial<Person>) {
     super(data);

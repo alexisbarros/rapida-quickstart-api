@@ -1,2 +1,6 @@
-export * from './google.controller';
-export * from './auth.controller';
+export * from './autentikigo/app.controller'
+export * from './autentikigo/apple.controller'
+export * from './autentikigo/auth.controller'
+export * from './autentikigo/google.controller'
+export * from './autentikigo/module.controller'
+

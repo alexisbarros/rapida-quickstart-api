@@ -42,7 +42,9 @@ export const transformSchemaToMongooseModel = (
   let mongooseModel: any = {};
 
   Object.keys(schema).forEach((key: string) => {
-    if(schema[key].ref){
+    if(Array.isArray(schema[key])){
+      mongooseModel[key] = transformSchemaToMongooseModel(schema[key][0])
+    } else if(schema[key].ref){
       mongooseModel[key] = {
         ...schema[key],
         type: Schema.Types.ObjectId,
@@ -207,6 +209,8 @@ const getSwaggerSchema = (
     } else if(Array.isArray(properties[key]) && properties[key].length){
       if(typeof (properties[key] as ISwaggerProperties[])[0] === 'string'){
         propertiesTyped[key] = { type: 'array', items: { type: (properties[key] as ISwaggerProperties[])[0] } };
+      } else if((properties[key] as ISwaggerProperties[])[0]._id && !populateDeepAttr){
+        propertiesTyped[key] = { type: 'array', items: { type: 'string' } };
       } else {
         const arrayProperty = (properties[key] as ISwaggerProperties[])[0];
         propertiesTyped[key] = {
@@ -270,6 +274,7 @@ const transformSchemaInSwaggerObject = (
 
     if(Array.isArray(model[key])){
       if(typeof model[key][0] === 'string') type = [model[key][0]];
+      else if(model[key][0].ref) type = [{_id: { type: 'string' }, ...model[key][0]['model']}];
       else type = [transformSchemaInSwaggerObject(model[key][0])];
     } else if(model[key]['type'] === 'object' && Object.keys(model[key]['properties']).length){
       type = transformSchemaInSwaggerObject({...model[key]['properties'], _objectFlag: { type: 'string' }});

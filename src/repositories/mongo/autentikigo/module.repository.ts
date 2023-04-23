@@ -14,7 +14,7 @@ if(mongoose.connection.readyState === 0){
 export class ModuleRepository implements IModuleRepository {
   async create(module: IModule): Promise<Module> {
     const moduleCreated = await ModuleMongoModel.create(module);
-    return new Module(moduleCreated.toJson());
+    return new Module(moduleCreated);
   }
 
   async findAll(filters: any, limit: number, page: number): Promise<Module[]> {

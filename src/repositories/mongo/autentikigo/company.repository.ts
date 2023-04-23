@@ -16,7 +16,7 @@ if(mongoose.connection.readyState === 0){
 export class CompanyRepository implements ICompanyRepository {
   async create(company: ICompany): Promise<Company> {
     const companyCreated = await CompanyMongoModel.create(company);
-    return new Company(companyCreated.toJson());
+    return new Company(companyCreated);
   }
 
   async findAll(filters: any, limit: number, page: number): Promise<Company[]> {

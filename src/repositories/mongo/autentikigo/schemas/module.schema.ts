@@ -6,8 +6,8 @@ export const moduleSchema = {
   description: { type: 'string' },
   collectionName: { type: 'string', required: true },
   route: { type: 'string', required: true },
-  _createdBy: { type: 'string', required: true },
-  _ownerId: { type: 'string', required: true },
+  _createdBy: { type: 'string', required: false, default: '' },
+  _ownerId: { type: 'string', required: false, default: '' },
 }
 
 const ModuleMongoSchema = new mongoose.Schema(

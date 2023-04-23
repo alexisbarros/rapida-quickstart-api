@@ -1,6 +1,6 @@
 import {HttpErrors} from '@loopback/rest';
 import mongoose from 'mongoose';
-import {App, IApp, Person} from '../../../domain/entities';
+import {App, IApp} from '../../../domain/entities';
 import {IAppRepository} from '../../../domain/repositories';
 import {getPopulateObjFromSchema} from '../../../utils/general.util';
 import {AppMongoModel} from './schemas/app.schema';
@@ -16,7 +16,7 @@ if(mongoose.connection.readyState === 0){
 export class AppRepository implements IAppRepository {
   async create(app: IApp): Promise<App> {
     const appCreated = await AppMongoModel.create(app);
-    return new App(appCreated.toJson());
+    return new App(appCreated);
   }
 
   async findAll(filters: any, limit: number, page: number): Promise<App[]> {
@@ -37,7 +37,7 @@ export class AppRepository implements IAppRepository {
     return new App(data);
   }
 
-  async updateById(id: string, appToUpdate: Partial<Person>): Promise<App> {
+  async updateById(id: string, appToUpdate: Partial<IApp>): Promise<App> {
     const data = await AppMongoModel
       .findByIdAndUpdate(id, appToUpdate, {new: true})
       .populate(getPopulateObjFromSchema('modules', moduleSchema))
@@ -46,7 +46,7 @@ export class AppRepository implements IAppRepository {
     return new App(data);
   }
 
-  async replaceById(id: string, appToUpdate: Person): Promise<App> {
+  async replaceById(id: string, appToUpdate: IApp): Promise<App> {
     const data = await AppMongoModel
       .findOneAndReplace({_id: id}, appToUpdate, {new: true})
       .populate(getPopulateObjFromSchema('modules', moduleSchema))

@@ -7,8 +7,8 @@ export const appSchema = {
   icon: { type: 'string', required: true },
   url: { type: 'string', required: true },
   modules: [{type: 'string', ref: 'Module', model: moduleSchema}],
-  _createdBy: { type: 'string', required: true },
-  _ownerId: { type: 'string', required: true },
+  _createdBy: { type: 'string', required: false, default: '' },
+  _ownerId: { type: 'string', required: false, default: '' },
 }
 
 const AppMongoSchema = new mongoose.Schema(

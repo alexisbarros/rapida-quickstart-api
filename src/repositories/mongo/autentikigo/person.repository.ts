@@ -16,7 +16,7 @@ if(mongoose.connection.readyState === 0){
 export class PersonRepository implements IPersonRepository {
   async create(person: IPerson): Promise<Person> {
     const personCreated = await PersonMongoModel.create(person);
-    return new Person(personCreated.toJson());
+    return new Person(personCreated);
   }
 
   async findAll(filters: any, limit: number, page: number): Promise<Person[]> {

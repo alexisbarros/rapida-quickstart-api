@@ -14,7 +14,7 @@ if(mongoose.connection.readyState === 0){
 export class UserRepository implements IUserRepository {
   async create(user: IUser): Promise<User> {
     const userCreated = await UserMongoModel.create(user);
-    return new User(userCreated.toJson());
+    return new User(userCreated);
   }
 
   async findAll(filters: any, limit: number, page: number): Promise<User[]> {

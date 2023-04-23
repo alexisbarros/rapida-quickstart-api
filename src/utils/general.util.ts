@@ -43,8 +43,14 @@ export const transformSchemaToMongooseModel = (
 
   Object.keys(schema).forEach((key: string) => {
     if(Array.isArray(schema[key])){
-      mongooseModel[key] = transformSchemaToMongooseModel(schema[key][0])
+      if(schema[key][0].ref)
+        mongooseModel[key] = [{type: Schema.Types.ObjectId, ref: schema[key][0].ref}]
+      else if (schema[key][0].type === 'string')
+        mongooseModel[key] = [schema[key][0].type]
+      else if (schema[key][0].type === 'object')
+        mongooseModel[key] = [transformSchemaToMongooseModel(schema[key][0].properties)]
     } else if(schema[key].ref){
+      delete schema[key].type;
       mongooseModel[key] = {
         ...schema[key],
         type: Schema.Types.ObjectId,
@@ -268,22 +274,27 @@ const transformSchemaInSwaggerObject = (
   let obj:ISwaggerProperties = {};
 
   deleteAttr = deleteAttr ?? [];
-
+console.log(model)
   Object.keys(model).forEach((key: string) => {
     let type;
 
-    if(Array.isArray(model[key])){
-      if(typeof model[key][0] === 'string') type = [model[key][0]];
-      else if(model[key][0].ref) type = [{_id: { type: 'string' }, ...model[key][0]['model']}];
-      else type = [transformSchemaInSwaggerObject(model[key][0])];
-    } else if(model[key]['type'] === 'object' && Object.keys(model[key]['properties']).length){
-      type = transformSchemaInSwaggerObject({...model[key]['properties'], _objectFlag: { type: 'string' }});
-    } else {
-      type = model[key]['model'] ?? model[key]['type'];
-    }
+    if(model[key]){
+      if(Array.isArray(model[key])){
+        if(typeof model[key][0] === 'string') type = [model[key][0]];
+        else if(model[key][0].ref) type = [{_id: { type: 'string' }, ...model[key][0]['model']}];
+        else if(model[key][0]['type'] === 'object' && Object.keys(model[key][0]['properties']))
+          type = transformSchemaInSwaggerObject({...model[key][0]['properties'], _objectFlag: { type: 'string' }});
+        else if(model[key][0].type === 'string') type = ['string'];
+        else type = [transformSchemaInSwaggerObject(model[key][0])];
+      } else if(model[key]['type'] === 'object' && Object.keys(model[key]['properties']).length){
+        type = transformSchemaInSwaggerObject({...model[key]['properties'], _objectFlag: { type: 'string' }});
+      } else {
+        type = model[key]['model'] ?? model[key]['type'];
+      }
 
-    if(!deleteAttr?.includes(key))
-      obj[key] = type;
+      if(!deleteAttr?.includes(key))
+        obj[key] = type;
+    }
   })
 
   return obj;

@@ -1,4 +1,2 @@
+export * from './google.controller';
 export * from './auth.controller';
-export * from './passwordless-auth.controller';
-export * from './ping.controller';
-

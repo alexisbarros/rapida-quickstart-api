@@ -1,6 +1,6 @@
 import {HttpErrors} from '@loopback/rest';
 import mongoose from 'mongoose';
-import {IPermissionGroup, PermissionGroup, Person} from '../../../domain/entities';
+import {IPermissionGroup, PermissionGroup} from '../../../domain/entities';
 import {IPermissionGroupRepository} from '../../../domain/repositories';
 import {getPopulateObjFromSchema} from '../../../utils/general.util';
 import {appSchema} from './schemas/app.schema';
@@ -48,7 +48,7 @@ export class PermissionGroupRepository implements IPermissionGroupRepository {
     return new PermissionGroup(data);
   }
 
-  async updateById(id: string, appToUpdate: Partial<Person>): Promise<PermissionGroup> {
+  async updateById(id: string, appToUpdate: Partial<IPermissionGroup>): Promise<PermissionGroup> {
     const data = await PermissionGroupMongoModel
       .findByIdAndUpdate(id, appToUpdate, {new: true})
       .populate(getPopulateObjFromSchema('app', appSchema))
@@ -62,7 +62,7 @@ export class PermissionGroupRepository implements IPermissionGroupRepository {
     return new PermissionGroup(data);
   }
 
-  async replaceById(id: string, appToUpdate: Person): Promise<PermissionGroup> {
+  async replaceById(id: string, appToUpdate: IPermissionGroup): Promise<PermissionGroup> {
     const data = await PermissionGroupMongoModel
       .findOneAndReplace({_id: id}, appToUpdate, {new: true})
       .populate(getPopulateObjFromSchema('app', appSchema))

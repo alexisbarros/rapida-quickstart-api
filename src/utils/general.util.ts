@@ -274,7 +274,7 @@ const transformSchemaInSwaggerObject = (
   let obj:ISwaggerProperties = {};
 
   deleteAttr = deleteAttr ?? [];
-console.log(model)
+
   Object.keys(model).forEach((key: string) => {
     let type;
 

@@ -8,7 +8,7 @@ export enum MethodsEnum {
   'DELETE',
 }
 
-interface IPermissionGroupPermission {
+export interface IPermissionGroupPermission {
   module: string | IModule,
   actions: MethodsEnum[],
 }

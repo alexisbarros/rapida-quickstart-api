@@ -26,7 +26,7 @@ export class UserController {
   @get('user/permissions')
   @response(200, getSwaggerResponseSchema(moduleSchema, true))
   async getUserPermissions(
-    @param.query.string('appId', { required: true }) appId: string,
+    @param.query.string('appId') appId: string,
   ): Promise<IHttpResponse> {
     try {
       const payload = new DecodeJwt().execute(this.httpRequest.headers.authorization);

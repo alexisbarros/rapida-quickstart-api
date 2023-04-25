@@ -14,25 +14,28 @@ export class GetPermissionFromAUser {
     this.moduleRepository = moduleRepository;
   }
 
-  public async execute(userId: string, appId: string): Promise<IModule[]> {
+  public async execute(userId: string, appId?: string): Promise<IModule[]> {
     const permissions = await this.permissionRepository
       .findAll({ user: userId }, 100, 0);
 
-    const appPermissions = permissions
+    const appPermissions = appId ? permissions
       .filter((permission: IPermission) => {
         return (permission.permissionGroup as IPermissionGroup).app.toString() === appId;
-      });
+      }) : permissions;
 
-    const moduleIds: string[] = appPermissions.map((permission: IPermission) => {
+    const modules: any[] = appPermissions.map((permission: IPermission) => {
       return (permission.permissionGroup as IPermissionGroup).permissions
-        .map((permissionGroupPermission: IPermissionGroupPermission) =>
-          permissionGroupPermission.module as string
-        );
+        .map((permissionGroupPermission: IPermissionGroupPermission) => {
+          return {
+            module: permissionGroupPermission.module as string,
+            actions: permissionGroupPermission.module,
+          }
+        });
     }).flat();
 
     return this.moduleRepository.findAll(
       {
-        _id: { $in: moduleIds }
+        _id: { $in: modules.map((el: any) => el.module) }
       },
       100, 0
     );

@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import {transformSchemaToMongooseModel} from '../../../../utils/general.util';
 import {permissionGroupSchema} from './permission-group.schema';
+import {userSchema} from './user.schema';
 
 export const permissionSchema = {
-  user: { type: 'string', required: true },
+  user: { type: 'string', required: true, ref: 'User', model: userSchema },
   permissionGroup: { type: 'string', required: true, ref: 'PermissionGroup', model: permissionGroupSchema },
   _createdBy: { type: 'string', required: false, default: '' },
   _ownerId: { type: 'string', required: false, default: '' },

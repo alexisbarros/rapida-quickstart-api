@@ -1,5 +1,6 @@
 export * from './app.repository'
 export * from './company.repository'
+export * from './invitation.repository'
 export * from './modules.repository'
 export * from './permission-group.repository'
 export * from './permission.repository'

@@ -1,5 +1,6 @@
 export * from './mongo/autentikigo/app.repository'
 export * from './mongo/autentikigo/company.repository'
+export * from './mongo/autentikigo/invitation.repository'
 export * from './mongo/autentikigo/module.repository'
 export * from './mongo/autentikigo/permission-group.repository'
 export * from './mongo/autentikigo/permission.repository'

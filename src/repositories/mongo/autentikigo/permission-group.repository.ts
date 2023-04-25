@@ -48,9 +48,9 @@ export class PermissionGroupRepository implements IPermissionGroupRepository {
     return new PermissionGroup(data);
   }
 
-  async updateById(id: string, appToUpdate: Partial<IPermissionGroup>): Promise<PermissionGroup> {
+  async updateById(id: string, permissionGroupToUpdate: Partial<IPermissionGroup>): Promise<PermissionGroup> {
     const data = await PermissionGroupMongoModel
-      .findByIdAndUpdate(id, appToUpdate, {new: true})
+      .findByIdAndUpdate(id, permissionGroupToUpdate, {new: true})
       .populate(getPopulateObjFromSchema('app', appSchema))
       .populate(getPopulateObjFromSchema(
         'permissions',
@@ -62,9 +62,9 @@ export class PermissionGroupRepository implements IPermissionGroupRepository {
     return new PermissionGroup(data);
   }
 
-  async replaceById(id: string, appToUpdate: IPermissionGroup): Promise<PermissionGroup> {
+  async replaceById(id: string, permissionGroupToUpdate: IPermissionGroup): Promise<PermissionGroup> {
     const data = await PermissionGroupMongoModel
-      .findOneAndReplace({_id: id}, appToUpdate, {new: true})
+      .findOneAndReplace({_id: id}, permissionGroupToUpdate, {new: true})
       .populate(getPopulateObjFromSchema('app', appSchema))
       .populate(getPopulateObjFromSchema(
         'permissions',

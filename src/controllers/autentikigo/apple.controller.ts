@@ -18,7 +18,7 @@ import {
   badRequestErrorHttpResponse,
 } from '../../utils/http-response.util';
 
-@api({basePath: 'apple'})
+@api({basePath: 'auth'})
 export class AppleController {
   constructor(
     @inject(RestBindings.Http.REQUEST) private httpRequest: Request,
@@ -28,7 +28,7 @@ export class AppleController {
   ) {}
 
   @visibility(OperationVisibility.UNDOCUMENTED)
-  @get('')
+  @get('apple')
   @response(204)
   async handleUserData(
     @param.query.string('code') code: string,
@@ -37,14 +37,16 @@ export class AppleController {
     try{
       const clientRedirectUri = new URLSearchParams(state)
         .get('clientRedirectUri');
-      // const invitationId = new URLSearchParams(state).get('invitationId');
+
+      const invitationId = new URLSearchParams(state)
+        .get('invitationId');
 
       const oAuthUser = await new GetAppleUserInfoFromCode().execute(code);
       const user = await new GetUserByEmail(this.userRepository)
         .execute(oAuthUser.email);
 
       const token = new GenerateJWT().execute(
-        user ? { id: user._id! } : {...oAuthUser},
+        user ? { id: user._id! } : {...oAuthUser, ...(invitationId ? {invitationId} : {})},
         user ? '7d' : '1d'
       );
 

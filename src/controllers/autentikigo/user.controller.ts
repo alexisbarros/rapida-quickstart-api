@@ -5,6 +5,7 @@ import {IModuleRepository, IPermissionRepository, IPersonRepository} from '../..
 import {ModuleRepository, PermissionRepository, PersonRepository} from '../../repositories';
 import {moduleSchema} from '../../repositories/mongo/autentikigo/schemas/module.schema';
 import {personSchema} from '../../repositories/mongo/autentikigo/schemas/person.schema';
+import {DecodeJwt} from '../../usecases/autentikigo/jwt';
 import {GetPermissionFromAUser} from '../../usecases/autentikigo/permission';
 import {GetPersonDataFromUser} from '../../usecases/autentikigo/person';
 import {getSwaggerResponseSchema} from '../../utils/general.util';
@@ -28,7 +29,8 @@ export class UserController {
     @param.query.string('appId', { required: true }) appId: string,
   ): Promise<IHttpResponse> {
     try {
-      const userId = '';
+      const payload = new DecodeJwt().execute(this.httpRequest.headers.authorization);
+      const userId = payload?.id;
 
       const data = await new GetPermissionFromAUser(
         this.permissionRepository, this.moduleRepository
@@ -54,7 +56,8 @@ export class UserController {
   @response(200, getSwaggerResponseSchema(personSchema))
   async getUserProfile(): Promise<IHttpResponse> {
     try {
-      const userId = '';
+      const payload = new DecodeJwt().execute(this.httpRequest.headers.authorization);
+      const userId = payload?.id;
 
       const data = await new GetPersonDataFromUser(
         this.personRepository

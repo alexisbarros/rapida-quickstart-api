@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import {IPermission, Permission} from '../../../domain/entities';
 import {IPermissionRepository} from '../../../domain/repositories';
 import {getPopulateObjFromSchema} from '../../../utils/general.util';
-import {moduleSchema} from './schemas/module.schema';
 import {permissionGroupSchema} from './schemas/permission-group.schema';
 import {PermissionMongoModel} from './schemas/permission.schema';
 
@@ -23,11 +22,7 @@ export class PermissionRepository implements IPermissionRepository {
   async findAll(filters: any, limit: number, page: number): Promise<Permission[]> {
     return (await PermissionMongoModel
       .find(filters)
-      .populate(getPopulateObjFromSchema(
-        'permissionGroup',
-        permissionGroupSchema,
-        { relatedNode: 'module', model: moduleSchema }
-      ))
+      .populate(getPopulateObjFromSchema('permissionGroup', permissionGroupSchema))
       .skip(page * limit)
       .limit(limit)
     ).map((data: any) => new Permission(data));
@@ -36,37 +31,25 @@ export class PermissionRepository implements IPermissionRepository {
   async findById(id: string): Promise<Permission> {
     const data = await PermissionMongoModel
       .findById(id)
-      .populate(getPopulateObjFromSchema(
-        'permissionGroup',
-        permissionGroupSchema,
-        { relatedNode: 'module', model: moduleSchema }
-      ))
+      .populate(getPopulateObjFromSchema('permissionGroup', permissionGroupSchema))
       .orFail(new HttpErrors[404]('Permission not found'));
 
     return new Permission(data);
   }
 
-  async updateById(id: string, appToUpdate: Partial<IPermission>): Promise<Permission> {
+  async updateById(id: string, permissionToUpdate: Partial<IPermission>): Promise<Permission> {
     const data = await PermissionMongoModel
-      .findByIdAndUpdate(id, appToUpdate, {new: true})
-      .populate(getPopulateObjFromSchema(
-        'permissionGroup',
-        permissionGroupSchema,
-        { relatedNode: 'module', model: moduleSchema }
-      ))
+      .findByIdAndUpdate(id, permissionToUpdate, {new: true})
+      .populate(getPopulateObjFromSchema('permissionGroup', permissionGroupSchema))
       .orFail(new HttpErrors[404]('Permission not found'));
 
     return new Permission(data);
   }
 
-  async replaceById(id: string, appToUpdate: IPermission): Promise<Permission> {
+  async replaceById(id: string, permissionToUpdate: IPermission): Promise<Permission> {
     const data = await PermissionMongoModel
-      .findOneAndReplace({_id: id}, appToUpdate, {new: true})
-      .populate(getPopulateObjFromSchema(
-        'permissionGroup',
-        permissionGroupSchema,
-        { relatedNode: 'module', model: moduleSchema }
-      ))
+      .findOneAndReplace({_id: id}, permissionToUpdate, {new: true})
+      .populate(getPopulateObjFromSchema('permissionGroup', permissionGroupSchema))
       .orFail(new HttpErrors[404]('Permission not found'));
 
     return new Permission(data);

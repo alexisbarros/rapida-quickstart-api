@@ -11,10 +11,12 @@ import {
 } from '@loopback/rest';
 import {
   ICompanyRepository,
+  IInvitationRepository,
+  IPermissionRepository,
   IPersonRepository,
   IUserRepository,
 } from '../../domain/repositories';
-import {CompanyRepository, PersonRepository} from '../../repositories';
+import {CompanyRepository, InvitationRepository, PermissionRepository, PersonRepository} from '../../repositories';
 import {GetAppleLoginUrl} from '../../usecases/autentikigo/apple';
 import {GetGoogleLoginUrl} from '../../usecases/autentikigo/google';
 import {GenerateJWT} from '../../usecases/autentikigo/jwt';
@@ -45,6 +47,8 @@ export class AuthController {
     @repository(UserRepository) private userRepository: IUserRepository,
     @repository(PersonRepository) private personRepository: IPersonRepository,
     @repository(CompanyRepository) private companyRepository: ICompanyRepository,
+    @repository(InvitationRepository) private invitationRepository: IInvitationRepository,
+    @repository(PermissionRepository) private permissionRepository: IPermissionRepository,
   ) {}
 
   @get('login/google')
@@ -101,6 +105,8 @@ export class AuthController {
       const idOfCreatedUser = await new SignupPerson(
         this.personRepository,
         this.userRepository,
+        this.invitationRepository,
+        this.permissionRepository,
       ).execute(data.uniqueId, data.birthday, token);
 
       if(idOfCreatedUser === 'noAuthorized'){

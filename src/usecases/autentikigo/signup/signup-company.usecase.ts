@@ -1,8 +1,9 @@
 import {GetCompanyDataFromApi} from '.';
-import {User} from '../../../domain/entities';
+import {ICompany, User} from '../../../domain/entities';
 import {ICompanyRepository, IUserRepository} from '../../../domain/repositories';
 import {IJwtPayload} from '../../../interfaces/jwt.interface';
 import {theDatesMatch} from '../../../utils/date-manipulation-functions';
+import {hideEmailString} from '../../../utils/string-manipulation-functions';
 import {GetCompanyByUniqueId} from '../company/get-company-by-unique-id.usecase';
 import {VerifyJwt} from '../jwt';
 
@@ -20,7 +21,6 @@ export class SignupCompany {
   }
 
   public async execute(uniqueId: string, birthday: number, token?: string): Promise<string> {
-    if(!token) throw new Error('Token must be provided');
     let payload: IJwtPayload;
     try { payload = new VerifyJwt().execute(token) }
     catch(err) { return 'noAuthorized' }
@@ -28,7 +28,10 @@ export class SignupCompany {
     const company = (
       await new GetCompanyByUniqueId(this.companyRepository).execute(uniqueId) ??
       await new GetCompanyDataFromApi(this.companyRepository).execute(uniqueId)
-    )
+    );
+
+    if(company.userId)
+      throw new Error(`The unique id is already being used by ${hideEmailString((company.userId as ICompany).email ?? '')}`);
 
     if(!theDatesMatch(company.birthday!, birthday))
       throw new Error('Birthday incorrect');

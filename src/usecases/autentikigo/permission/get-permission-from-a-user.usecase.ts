@@ -20,7 +20,7 @@ export class GetPermissionFromAUser {
 
     const appPermissions = permissions
       .filter((permission: IPermission) => {
-        return (permission.permissionGroup as IPermissionGroup).app === appId;
+        return (permission.permissionGroup as IPermissionGroup).app.toString() === appId;
       });
 
     const moduleIds: string[] = appPermissions.map((permission: IPermission) => {

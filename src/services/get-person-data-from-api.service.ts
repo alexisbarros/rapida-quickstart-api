@@ -1,8 +1,9 @@
 import {Person} from '../domain/entities';
+import {IGetPersonProfileDataFromApi} from '../interfaces';
 import {convertBirthdayStringToDate} from '../utils/date-manipulation-functions';
 const fetch = require('node-fetch')
 
-export class GetPersonDataFromAPI {
+export class GetPersonDataFromAPI implements IGetPersonProfileDataFromApi {
 
   async execute(uniqueId: string): Promise<Person> {
 

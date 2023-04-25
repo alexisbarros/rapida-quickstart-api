@@ -114,11 +114,14 @@ export class AuthController {
         return this.httpResponse.send({ statusCode: 401 });
       }
 
+      const refreshToken = new GenerateJWT()
+        .execute({ id: idOfCreatedUser }, '30d');
+
       const authToken = new GenerateJWT().execute(
-        { id: idOfCreatedUser },
+        { id: idOfCreatedUser, refreshToken },
         '7d',
       );
-      this.httpResponse.cookie('auth-token', authToken);
+      this.httpResponse.cookie('auth-token', authToken, { expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) });
 
       return createHttpResponse({
         request: this.httpRequest,
@@ -152,11 +155,14 @@ export class AuthController {
         return this.httpResponse.send({ statusCode: 401 });
       }
 
+      const refreshToken = new GenerateJWT()
+        .execute({ id: idOfCreatedUser }, '30d');
+
       const authToken = new GenerateJWT().execute(
-        { id: idOfCreatedUser },
+        { id: idOfCreatedUser, refreshToken },
         '7d',
       );
-      this.httpResponse.cookie('auth-token', authToken);
+      this.httpResponse.cookie('auth-token', authToken, { expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) });
 
       return createHttpResponse({
         request: this.httpRequest,

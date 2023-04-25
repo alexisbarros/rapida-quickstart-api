@@ -2,6 +2,7 @@ import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {IApp} from '../../domain/entities';
 import {IAppRepository} from '../../domain/repositories';
 import {AppRepository} from '../../repositories';
@@ -18,8 +19,14 @@ export class AppController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @repository(AppRepository) private appRepository: IAppRepository,
+
+    @inject(SecurityBindings.USER, {optional: true}) private user?: UserProfile,
   ){}
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'App', action: 'POST'}
+  })
   @post('apps')
   @response(201, getSwaggerResponseSchema())
   async create(
@@ -27,7 +34,11 @@ export class AppController {
     data: IApp
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreateApp(this.appRepository).execute(data);
+      const dataCreated = await new CreateApp(this.appRepository).execute({
+        ...data,
+        _createdBy: this.user?.userId,
+        _ownerId: this.user?.userId,
+      });
 
       return createHttpResponse({
         data: dataCreated,
@@ -79,6 +90,10 @@ export class AppController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'App', action: 'GET'}
+  })
   @get('apps/{id}')
   @response(200, getSwaggerResponseSchema(appSchema, false))
   async findOne(
@@ -103,6 +118,10 @@ export class AppController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'App', action: 'PUT'}
+  })
   @put('apps/{id}')
   @response(200, getSwaggerResponseSchema(appSchema, false))
   async replace(
@@ -129,6 +148,10 @@ export class AppController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'App', action: 'PATCH'}
+  })
   @patch('apps/{id}')
   @response(200, getSwaggerResponseSchema(appSchema, false))
   async update(
@@ -155,6 +178,10 @@ export class AppController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'App', action: 'DELETE'}
+  })
   @del('apps/{id}')
   @response(200, getSwaggerResponseSchema())
   async delete(

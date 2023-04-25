@@ -44,16 +44,19 @@ export class GoogleController {
       const user = await new GetUserByEmail(this.userRepository)
         .execute(oAuthUser.email);
 
+      const refreshToken = user ?
+        new GenerateJWT().execute({ id: user._id! }, '30d'): '';
+
       const token = new GenerateJWT().execute(
-        user ? { id: user._id! } : {...oAuthUser, ...(invitationId ? {invitationId} : {})},
+        user ? { id: user._id!, refreshToken } : {...oAuthUser, ...(invitationId ? {invitationId} : {})},
         user ? '7d' : '1d'
       );
 
       if(user) {
-        this.httpResponse.cookie('auth-token', token);
+        this.httpResponse.cookie('auth-token', token, { expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) });
         this.httpResponse.redirect(`${clientRedirectUri!}/home`);
       } else {
-        this.httpResponse.cookie('signup-token', token);
+        this.httpResponse.cookie('signup-token', token, { expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) });
         this.httpResponse.redirect(`${clientRedirectUri!}/signu-up`);
       }
 

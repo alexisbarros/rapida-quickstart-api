@@ -1,6 +1,8 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {IModule} from '../../domain/entities';
 import {IModuleRepository} from '../../domain/repositories';
 import {ModuleRepository} from '../../repositories';
@@ -17,8 +19,14 @@ export class ModuleController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @repository(ModuleRepository) private moduleRepository: IModuleRepository,
+
+    @inject(SecurityBindings.USER, {optional: true}) private user?: UserProfile,
   ){}
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Module', action: 'POST'}
+  })
   @post('modules')
   @response(201, getSwaggerResponseSchema())
   async create(
@@ -26,7 +34,11 @@ export class ModuleController {
     data: IModule
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreateModule(this.moduleRepository).execute(data);
+      const dataCreated = await new CreateModule(this.moduleRepository).execute({
+        ...data,
+        _createdBy: this.user?.userId,
+        _ownerId: this.user?.userId,
+      });
 
       return createHttpResponse({
         data: dataCreated,
@@ -44,6 +56,10 @@ export class ModuleController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Module', action: 'GET'}
+  })
   @get('modules')
   @response(200, getSwaggerResponseSchema(moduleSchema, true))
   async findAll(
@@ -74,6 +90,10 @@ export class ModuleController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Module', action: 'GET'}
+  })
   @get('modules/{id}')
   @response(200, getSwaggerResponseSchema(moduleSchema, false))
   async findOne(
@@ -98,6 +118,10 @@ export class ModuleController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Module', action: 'PUT'}
+  })
   @put('modules/{id}')
   @response(200, getSwaggerResponseSchema(moduleSchema, false))
   async replace(
@@ -124,6 +148,10 @@ export class ModuleController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Module', action: 'PATCH'}
+  })
   @patch('modules/{id}')
   @response(200, getSwaggerResponseSchema(moduleSchema, false))
   async update(
@@ -150,6 +178,10 @@ export class ModuleController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Module', action: 'DELETE'}
+  })
   @del('modules/{id}')
   @response(200, getSwaggerResponseSchema())
   async delete(

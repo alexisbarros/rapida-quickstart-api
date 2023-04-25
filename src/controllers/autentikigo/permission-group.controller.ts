@@ -1,6 +1,8 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {IPermissionGroup} from '../../domain/entities';
 import {IPermissionGroupRepository} from '../../domain/repositories';
 import {PermissionGroupRepository} from '../../repositories';
@@ -17,8 +19,14 @@ export class PermissionGroupController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @repository(PermissionGroupRepository) private permissionGroupRepository: IPermissionGroupRepository,
+
+    @inject(SecurityBindings.USER, {optional: true}) private user?: UserProfile,
   ){}
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'PermissionGroup', action: 'POST'}
+  })
   @post('permission-groups')
   @response(201, getSwaggerResponseSchema())
   async create(
@@ -26,7 +34,11 @@ export class PermissionGroupController {
     data: IPermissionGroup
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreatePermissionGroup(this.permissionGroupRepository).execute(data);
+      const dataCreated = await new CreatePermissionGroup(this.permissionGroupRepository).execute({
+        ...data,
+        _createdBy: this.user?.userId,
+        _ownerId: this.user?.userId,
+      });
 
       return createHttpResponse({
         data: dataCreated,
@@ -44,6 +56,10 @@ export class PermissionGroupController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'PermissionGroup', action: 'GET'}
+  })
   @get('permission-groups')
   @response(200, getSwaggerResponseSchema(permissionGroupSchema, true))
   async findAll(
@@ -74,6 +90,10 @@ export class PermissionGroupController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'PermissionGroup', action: 'GET'}
+  })
   @get('permission-groups/{id}')
   @response(200, getSwaggerResponseSchema(permissionGroupSchema, false))
   async findOne(
@@ -98,6 +118,10 @@ export class PermissionGroupController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'PermissionGroup', action: 'PUT'}
+  })
   @put('permission-groups/{id}')
   @response(200, getSwaggerResponseSchema(permissionGroupSchema, false))
   async replace(
@@ -124,6 +148,10 @@ export class PermissionGroupController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'PermissionGroup', action: 'PATCH'}
+  })
   @patch('permission-groups/{id}')
   @response(200, getSwaggerResponseSchema(permissionGroupSchema, false))
   async update(
@@ -150,6 +178,10 @@ export class PermissionGroupController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'PermissionGroup', action: 'DELETE'}
+  })
   @del('permission-groups/{id}')
   @response(200, getSwaggerResponseSchema())
   async delete(

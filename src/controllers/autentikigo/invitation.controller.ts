@@ -1,6 +1,8 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {IInvitation} from '../../domain/entities';
 import {IInvitationRepository} from '../../domain/repositories';
 import {InvitationRepository} from '../../repositories';
@@ -18,8 +20,14 @@ export class InvitationController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @repository(InvitationRepository) private invitationRepository: IInvitationRepository,
+
+    @inject(SecurityBindings.USER, {optional: true}) private user?: UserProfile,
   ){}
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'POST'}
+  })
   @post('invitations')
   @response(201, getSwaggerResponseSchema())
   async create(
@@ -27,7 +35,11 @@ export class InvitationController {
     data: IInvitation
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreateInvivation(this.invitationRepository).execute(data);
+      const dataCreated = await new CreateInvivation(this.invitationRepository).execute({
+        ...data,
+        _createdBy: this.user?.userId,
+        _ownerId: this.user?.userId,
+      });
 
       return createHttpResponse({
         data: dataCreated,
@@ -45,6 +57,10 @@ export class InvitationController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'GET'}
+  })
   @get('invitations')
   @response(200, getSwaggerResponseSchema(invitationSchema, true))
   async findAll(
@@ -75,6 +91,10 @@ export class InvitationController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'GET'}
+  })
   @get('invitations/{id}')
   @response(200, getSwaggerResponseSchema(invitationSchema, false))
   async findOne(
@@ -99,6 +119,10 @@ export class InvitationController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'GET'}
+  })
   @get('invitations/{id}/send')
   @response(200, getSwaggerResponseSchema())
   async sendInvitation(
@@ -130,6 +154,10 @@ export class InvitationController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'PUT'}
+  })
   @put('invitations/{id}')
   @response(200, getSwaggerResponseSchema(invitationSchema, false))
   async replace(
@@ -156,6 +184,10 @@ export class InvitationController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'PATCH'}
+  })
   @patch('invitations/{id}')
   @response(200, getSwaggerResponseSchema(invitationSchema, false))
   async update(
@@ -182,6 +214,10 @@ export class InvitationController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'Invitation', action: 'DELETE'}
+  })
   @del('invitations/{id}')
   @response(200, getSwaggerResponseSchema())
   async delete(

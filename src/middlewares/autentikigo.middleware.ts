@@ -3,11 +3,12 @@ import {Getter, inject} from '@loopback/core';
 import {model, repository} from '@loopback/repository';
 import {Request, Response, RestBindings} from '@loopback/rest';
 import {UserProfile, securityId} from '@loopback/security';
-import {IModuleRepository, IPermissionGroupRepository, IPermissionRepository} from '../domain/repositories';
-import {ModuleRepository, PermissionGroupRepository, PermissionRepository} from '../repositories';
+import {IModule, IPermission, IPermissionGroup, IPermissionGroupPermission} from '../domain/entities';
+import {IPermissionGroupRepository, IPermissionRepository} from '../domain/repositories';
+import {PermissionGroupRepository, PermissionRepository} from '../repositories';
 import {VerifyJwt} from '../usecases/autentikigo/jwt';
-import {GetPermissionFromAUser} from '../usecases/autentikigo/permission';
 import {GetAllPermissionGroups} from '../usecases/autentikigo/permission-group';
+import {GetPermissionsFromUser} from '../usecases/autentikigo/permission/get-permissions-fom-user.usecase';
 
 @model()
 export class Lb4User implements UserProfile {
@@ -20,7 +21,7 @@ export class Lb4User implements UserProfile {
   }
 }
 
-export class AutentikigoStrategy implements AuthenticationStrategy {
+export class Autentikigo implements AuthenticationStrategy {
   name = 'autentikigo'
 
 
@@ -30,8 +31,6 @@ export class AutentikigoStrategy implements AuthenticationStrategy {
 
     @repository(PermissionGroupRepository) private permissionGroupRepository: IPermissionGroupRepository,
     @repository(PermissionRepository) private permissionRepository: IPermissionRepository,
-    @repository(ModuleRepository) private moduleRepository: IModuleRepository,
-    // @repository(UserRepository) private userRepository: UserRepository,
   ) { }
 
   async authenticate(request: Request): Promise<UserProfile | undefined> {
@@ -45,43 +44,35 @@ export class AutentikigoStrategy implements AuthenticationStrategy {
       const payload = new VerifyJwt().execute(request.headers.authorization);
       const userId = payload.id;
 
-      const permissions = await new GetAllPermissionGroups(
-        this.permissionGroupRepository
-      ).execute({ user: userId }, 20, 0);
-
-      const modules = await new GetPermissionFromAUser(
-        this.permissionRepository,
-        this.moduleRepository,
+      const permissions = await new GetPermissionsFromUser(
+        this.permissionRepository
       ).execute(userId);
 
+      const permissionGroups = await new GetAllPermissionGroups(
+        this.permissionGroupRepository
+      ).execute({
+        _id: {
+          $in: permissions.map((permission: IPermission) => {
+            return (permission.permissionGroup as IPermissionGroup)._id!.toString()
+          })
+        }
+      }, 100, 0);
 
-      // const permissionGroups = await this.userRepository
-      //   .permissionGroups(userId)
-      //   .find({
-      //     where: {projectId: process.env.PROJECT_ID},
-      //     include: [{
-      //       relation: 'permissions', scope: {
-      //         include: [
-      //           {relation: 'permissionActions', scope: {where: {name: action}}},
-      //           {relation: 'module', scope: {where: {collection}}}
-      //         ]
-      //       }
-      //     }]
-      //   })
-      // const permissionGroup = permissionGroups[0]
-
-      // if (action) {
-      //   if (permissionGroup) {//} && permissionGroup.name !== 'Kunlatek - Admin') {
-      //     let userHasPermission = false;
-      //     permissionGroup.permissions?.forEach(permission => {
-      //       if (permission.module && permission.permissionActions.length) {
-      //         userHasPermission = true
-      //         ownerId = permissionGroup._createdBy
-      //       }
-      //     })
-      //     if (!userHasPermission) throw serverMessages['httpResponse']['unauthorizedError'][LocaleEnum['pt-BR']]
-      //   } else throw serverMessages['httpResponse']['unauthorizedError'][LocaleEnum['pt-BR']]
-      // }
+      let userHasPermission = false;
+      console.log(collection, action);
+      console.log(permissionGroups);
+      permissionGroups.forEach((permissionGroup: IPermissionGroup) => {
+        (permissionGroup.permissions as IPermissionGroupPermission[])
+          .forEach((permissionGroupPermission: IPermissionGroupPermission) => {
+            if((
+              permissionGroupPermission.module as IModule).collectionName === collection &&
+              permissionGroupPermission.actions.includes(action)
+            ){
+              userHasPermission = true;
+            }
+          });
+      });
+      if(!userHasPermission) throw new Error('User does not have permission to access this route');
 
       const userProfile = new Lb4User({ userId, [securityId]: userId.toString() })
       return userProfile

@@ -1,4 +1,4 @@
-import {AuthenticationComponent} from '@loopback/authentication';
+import {AuthenticationComponent, registerAuthenticationStrategy} from '@loopback/authentication';
 import {JWTAuthenticationComponent} from '@loopback/authentication-jwt';
 import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
@@ -11,6 +11,7 @@ import {
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 // import {AutentikigoStrategy} from './OLDs/strategies/auth-strategy';
+import {Autentikigo} from './middlewares/autentikigo.middleware';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -48,7 +49,7 @@ export class QuickstartApiApplication extends BootMixin(
     this.component(AuthenticationComponent);
     // Mount jwt component
     this.component(JWTAuthenticationComponent);
-    // Autentikigo strategy
-    // registerAuthenticationStrategy(this, AutentikigoStrategy);
+    // Autentikigo
+    registerAuthenticationStrategy(this, Autentikigo);
   }
 }

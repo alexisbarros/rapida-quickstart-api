@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
@@ -44,6 +45,10 @@ export class AppController {
     }
   }
 
+  @authenticate({
+    strategy: 'autentikigo',
+    options: {collection: 'App', action: 'GET'}
+  })
   @get('apps')
   @response(200, getSwaggerResponseSchema(appSchema, true))
   async findAll(

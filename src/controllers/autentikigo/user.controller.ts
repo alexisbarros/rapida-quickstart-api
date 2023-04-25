@@ -1,15 +1,15 @@
-import {inject} from '@loopback/core';
-import {repository} from '@loopback/repository';
-import {Request, Response, RestBindings, api, get, param, response} from '@loopback/rest';
-import {IModuleRepository, IPermissionRepository, IPersonRepository} from '../../domain/repositories';
-import {ModuleRepository, PermissionRepository, PersonRepository} from '../../repositories';
-import {moduleSchema} from '../../repositories/mongo/autentikigo/schemas/module.schema';
-import {personSchema} from '../../repositories/mongo/autentikigo/schemas/person.schema';
-import {DecodeJwt} from '../../usecases/autentikigo/jwt';
-import {GetPermissionFromAUser} from '../../usecases/autentikigo/permission';
-import {GetPersonDataFromUser} from '../../usecases/autentikigo/person';
-import {getSwaggerResponseSchema} from '../../utils/general.util';
-import {IHttpResponse, badRequestErrorHttpResponse, notFoundErrorHttpResponse, okHttpResponse} from '../../utils/http-response.util';
+import { inject } from '@loopback/core';
+import { repository } from '@loopback/repository';
+import { Request, Response, RestBindings, api, get, param, response } from '@loopback/rest';
+import { IModuleRepository, IPermissionRepository, IPersonRepository } from '../../domain/repositories';
+import { ModuleRepository, PermissionRepository, PersonRepository } from '../../repositories';
+import { moduleSchema } from '../../repositories/mongo/autentikigo/schemas/module.schema';
+import { personSchema } from '../../repositories/mongo/autentikigo/schemas/person.schema';
+import { DecodeJwt } from '../../usecases/autentikigo/jwt';
+import { GetAppModulesThatUserHasPermission } from '../../usecases/autentikigo/permission';
+import { GetPersonDataFromUser } from '../../usecases/autentikigo/person';
+import { getSwaggerResponseSchema } from '../../utils/general.util';
+import { IHttpResponse, badRequestErrorHttpResponse, notFoundErrorHttpResponse, okHttpResponse } from '../../utils/http-response.util';
 
 @api({ basePath: 'autentikigo' })
 export class UserController {
@@ -32,7 +32,7 @@ export class UserController {
       const payload = new DecodeJwt().execute(this.httpRequest.headers.authorization);
       const userId = payload?.id;
 
-      const data = await new GetPermissionFromAUser(
+      const data = await new GetAppModulesThatUserHasPermission(
         this.permissionRepository, this.moduleRepository
       ).execute(userId, appId);
 

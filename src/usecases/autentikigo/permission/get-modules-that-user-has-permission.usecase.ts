@@ -1,7 +1,7 @@
 import {IModule, IPermission, IPermissionGroup, IPermissionGroupPermission} from '../../../domain/entities';
 import {IModuleRepository, IPermissionRepository} from '../../../domain/repositories';
 
-export class GetPermissionFromAUser {
+export class GetAppModulesThatUserHasPermission {
 
   private permissionRepository: IPermissionRepository;
   private moduleRepository: IModuleRepository;

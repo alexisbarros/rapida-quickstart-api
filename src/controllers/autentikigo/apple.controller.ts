@@ -55,10 +55,10 @@ export class AppleController {
 
       if(user) {
         this.httpResponse.cookie('auth-token', token, { expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) });
-        this.httpResponse.redirect(`${clientRedirectUri!}/main`);
+        this.httpResponse.redirect(`${clientRedirectUri!}`);
       } else {
         this.httpResponse.cookie('signup-token', token), { expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) };
-        this.httpResponse.redirect(`${clientRedirectUri!}/signu-up`);
+        this.httpResponse.redirect(`${clientRedirectUri!}`);
       }
 
     } catch (err) {

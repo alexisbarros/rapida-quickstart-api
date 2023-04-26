@@ -1,7 +1,7 @@
 {
-  "name": "autentikigo",
+  "name": "api",
   "version": "0.0.1",
-  "description": "Autentikigo",
+  "description": "API",
   "keywords": [
     "loopback-application",
     "loopback"

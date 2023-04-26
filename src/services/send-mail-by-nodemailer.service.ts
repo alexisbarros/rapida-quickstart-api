@@ -5,9 +5,9 @@ export class SendMailByNodemailer implements ISendMail {
 
   public async execute(mailTo: string, body: string): Promise<void> {
     const mailOptions = {
-      from: '"Autentikigo" <noreply@autentikigo.com.br>',
+      from: '"API" <noreply@api.com.br>',
       to: mailTo,
-      subject: 'Convite Autentikigo',
+      subject: 'Convite',
       html: body
     }
 

@@ -133,7 +133,7 @@ export class InvitationController {
 
       const mailBody = `
         <p>
-          <a href='${process.env.SERVER_ROOT_URI}/auth/login/google?invitation-id=${id}'>Login com convite</a>
+          <a href='${process.env.OAUTH_REDIRECT_URI}/auth/login/google?invitation-id=${id}'>Login com convite</a>
         </p>
       `
 

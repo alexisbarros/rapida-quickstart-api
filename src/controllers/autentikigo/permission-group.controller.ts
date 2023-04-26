@@ -7,7 +7,6 @@ import {IPermissionGroup} from '../../domain/entities';
 import {IPermissionGroupRepository} from '../../domain/repositories';
 import {PermissionGroupRepository} from '../../repositories';
 import {permissionGroupSchema} from '../../repositories/mongo/autentikigo/schemas/permission-group.schema';
-import {CreatePermissionGroup, DeletePermissionGroup, GetAllPermissionGroups, GetOnePermissionGroup, ReplacePermissionGroup, UpdatePermissionGroup} from '../../usecases/autentikigo/permission-group';
 import {getSwaggerRequestBodySchema, getSwaggerResponseSchema} from '../../utils/general.util';
 import {IHttpResponse, badRequestErrorHttpResponse, createHttpResponse, notFoundErrorHttpResponse, okHttpResponse} from '../../utils/http-response.util';
 
@@ -34,7 +33,7 @@ export class PermissionGroupController {
     data: IPermissionGroup
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreatePermissionGroup(this.permissionGroupRepository).execute({
+      const dataCreated = await this.permissionGroupRepository.create({
         ...data,
         _createdBy: this.user?.userId,
         _ownerId: this.user?.userId,
@@ -68,7 +67,7 @@ export class PermissionGroupController {
     @param.query.number('page') page?: number,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetAllPermissionGroups(this.permissionGroupRepository).execute(
+      const data = await this.permissionGroupRepository.findAll(
         filters ?? {},
         limit ?? 100,
         page ?? 0,
@@ -100,7 +99,7 @@ export class PermissionGroupController {
     @param.path.string('id') id: string,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetOnePermissionGroup(this.permissionGroupRepository).execute(id);
+      const data = await this.permissionGroupRepository.findById(id);
 
       return okHttpResponse({
         data,
@@ -130,7 +129,7 @@ export class PermissionGroupController {
     data: IPermissionGroup
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new ReplacePermissionGroup(this.permissionGroupRepository).execute(id, data)
+      const dataUpdated = await this.permissionGroupRepository.replaceById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -160,7 +159,7 @@ export class PermissionGroupController {
     data: Partial<IPermissionGroup>
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new UpdatePermissionGroup(this.permissionGroupRepository).execute(id, data)
+      const dataUpdated = await this.permissionGroupRepository.updateById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -188,7 +187,7 @@ export class PermissionGroupController {
     @param.path.string('id') id: string
   ): Promise<IHttpResponse> {
     try {
-      await new DeletePermissionGroup(this.permissionGroupRepository).execute(id);
+      await this.permissionGroupRepository.deleteById(id);
 
       return okHttpResponse({
         request: this.httpRequest,

@@ -8,7 +8,6 @@ import {IInvitationRepository} from '../../domain/repositories';
 import {InvitationRepository} from '../../repositories';
 import {invitationSchema} from '../../repositories/mongo/autentikigo/schemas/invitation.schema';
 import {SendMailByNodemailer} from '../../services';
-import {CreateInvivation, DeleteInvitation, GetAllInvitations, GetOneInvitation, ReplaceInvitation, UpdateInvitation} from '../../usecases/autentikigo/invitation';
 import {getSwaggerRequestBodySchema, getSwaggerResponseSchema} from '../../utils/general.util';
 import {IHttpResponse, badRequestErrorHttpResponse, createHttpResponse, noContentHttpResponse, notFoundErrorHttpResponse, okHttpResponse} from '../../utils/http-response.util';
 
@@ -35,7 +34,7 @@ export class InvitationController {
     data: IInvitation
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreateInvivation(this.invitationRepository).execute({
+      const dataCreated = await this.invitationRepository.create({
         ...data,
         _createdBy: this.user?.userId,
         _ownerId: this.user?.userId,
@@ -69,7 +68,7 @@ export class InvitationController {
     @param.query.number('page') page?: number,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetAllInvitations(this.invitationRepository).execute(
+      const data = await this.invitationRepository.findAll(
         filters ?? {},
         limit ?? 100,
         page ?? 0,
@@ -101,7 +100,7 @@ export class InvitationController {
     @param.path.string('id') id: string,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetOneInvitation(this.invitationRepository).execute(id);
+      const data = await this.invitationRepository.findById(id);
 
       return okHttpResponse({
         data,
@@ -129,7 +128,7 @@ export class InvitationController {
     @param.path.string('id') id: string,
   ): Promise<IHttpResponse> {
     try {
-      const invitation = await new GetOneInvitation(this.invitationRepository).execute(id);
+      const invitation = await this.invitationRepository.findById(id);
 
       const mailBody = `
         <p>
@@ -166,7 +165,7 @@ export class InvitationController {
     data: IInvitation
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new ReplaceInvitation(this.invitationRepository).execute(id, data)
+      const dataUpdated = await this.invitationRepository.replaceById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -196,7 +195,7 @@ export class InvitationController {
     data: Partial<IInvitation>
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new UpdateInvitation(this.invitationRepository).execute(id, data)
+      const dataUpdated = await this.invitationRepository.updateById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -224,7 +223,7 @@ export class InvitationController {
     @param.path.string('id') id: string
   ): Promise<IHttpResponse> {
     try {
-      await new DeleteInvitation(this.invitationRepository).execute(id);
+      await this.invitationRepository.deleteById(id);
 
       return okHttpResponse({
         request: this.httpRequest,

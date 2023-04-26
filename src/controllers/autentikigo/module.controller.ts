@@ -7,7 +7,6 @@ import {IModule} from '../../domain/entities';
 import {IModuleRepository} from '../../domain/repositories';
 import {ModuleRepository} from '../../repositories';
 import {moduleSchema} from '../../repositories/mongo/autentikigo/schemas/module.schema';
-import {CreateModule, DeleteModule, GetAllModules, GetOneModule, ReplaceModule, UpdateModule} from '../../usecases/autentikigo/module';
 import {getSwaggerRequestBodySchema, getSwaggerResponseSchema} from '../../utils/general.util';
 import {IHttpResponse, badRequestErrorHttpResponse, createHttpResponse, notFoundErrorHttpResponse, okHttpResponse} from '../../utils/http-response.util';
 
@@ -34,7 +33,7 @@ export class ModuleController {
     data: IModule
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreateModule(this.moduleRepository).execute({
+      const dataCreated = await this.moduleRepository.create({
         ...data,
         _createdBy: this.user?.userId,
         _ownerId: this.user?.userId,
@@ -68,7 +67,7 @@ export class ModuleController {
     @param.query.number('page') page?: number,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetAllModules(this.moduleRepository).execute(
+      const data = await this.moduleRepository.findAll(
         filters ?? {},
         limit ?? 100,
         page ?? 0,
@@ -100,7 +99,7 @@ export class ModuleController {
     @param.path.string('id') id: string,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetOneModule(this.moduleRepository).execute(id);
+      const data = await this.moduleRepository.findById(id);
 
       return okHttpResponse({
         data,
@@ -130,7 +129,7 @@ export class ModuleController {
     data: IModule
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new ReplaceModule(this.moduleRepository).execute(id, data)
+      const dataUpdated = await this.moduleRepository.replaceById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -160,7 +159,7 @@ export class ModuleController {
     data: Partial<IModule>
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new UpdateModule(this.moduleRepository).execute(id, data)
+      const dataUpdated = await this.moduleRepository.updateById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -188,7 +187,7 @@ export class ModuleController {
     @param.path.string('id') id: string
   ): Promise<IHttpResponse> {
     try {
-      await new DeleteModule(this.moduleRepository).execute(id);
+      await this.moduleRepository.deleteById(id);
 
       return okHttpResponse({
         request: this.httpRequest,

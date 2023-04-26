@@ -1,7 +1,6 @@
 import {GetPermissionsFromUser} from '.';
 import {IModule, IPermission, IPermissionGroup, IPermissionGroupPermission, MethodsEnum} from '../../../domain/entities';
 import {IPermissionGroupRepository, IPermissionRepository} from '../../../domain/repositories';
-import {GetAllPermissionGroups} from '../permission-group';
 
 interface IUserHasPermissionProps {
   userId: string,
@@ -27,9 +26,8 @@ export class UserHasPermission {
       this.permissionRepository
     ).execute(userId);
 
-    const permissionGroups = await new GetAllPermissionGroups(
-      this.permissionGroupRepository
-    ).execute({
+    const permissionGroups = await this.permissionGroupRepository
+      .findAll({
       _id: {
         $in: permissions.map((permission: IPermission) => {
           return (permission.permissionGroup as IPermissionGroup)._id!.toString()

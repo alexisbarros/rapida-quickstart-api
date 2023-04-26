@@ -7,7 +7,6 @@ import {IApp} from '../../domain/entities';
 import {IAppRepository} from '../../domain/repositories';
 import {AppRepository} from '../../repositories';
 import {appSchema} from '../../repositories/mongo/autentikigo/schemas/app.schema';
-import {CreateApp, DeleteApp, GetAllApps, GetOneApp, ReplaceApp, UpdateApp} from '../../usecases/autentikigo/app';
 import {getSwaggerRequestBodySchema, getSwaggerResponseSchema} from '../../utils/general.util';
 import {IHttpResponse, badRequestErrorHttpResponse, createHttpResponse, notFoundErrorHttpResponse, okHttpResponse} from '../../utils/http-response.util';
 
@@ -34,7 +33,7 @@ export class AppController {
     data: IApp
   ): Promise<IHttpResponse> {
     try {
-      const dataCreated = await new CreateApp(this.appRepository).execute({
+      const dataCreated = await this.appRepository.create({
         ...data,
         _createdBy: this.user?.userId,
         _ownerId: this.user?.userId,
@@ -68,7 +67,7 @@ export class AppController {
     @param.query.number('page') page?: number,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetAllApps(this.appRepository).execute(
+      const data = await this.appRepository.findAll(
         filters ?? {},
         limit ?? 100,
         page ?? 0,
@@ -100,7 +99,7 @@ export class AppController {
     @param.path.string('id') id: string,
   ): Promise<IHttpResponse> {
     try {
-      const data = await new GetOneApp(this.appRepository).execute(id);
+      const data = await this.appRepository.findById(id);
 
       return okHttpResponse({
         data,
@@ -130,7 +129,7 @@ export class AppController {
     data: IApp
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new ReplaceApp(this.appRepository).execute(id, data)
+      const dataUpdated = await this.appRepository.replaceById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -160,7 +159,7 @@ export class AppController {
     data: Partial<IApp>
   ): Promise<IHttpResponse> {
     try {
-      const dataUpdated = await new UpdateApp(this.appRepository).execute(id, data)
+      const dataUpdated = await this.appRepository.updateById(id, data)
 
       return okHttpResponse({
         data: dataUpdated,
@@ -188,7 +187,7 @@ export class AppController {
     @param.path.string('id') id: string
   ): Promise<IHttpResponse> {
     try {
-      await new DeleteApp(this.appRepository).execute(id);
+      await this.appRepository.deleteById(id);
 
       return okHttpResponse({
         request: this.httpRequest,

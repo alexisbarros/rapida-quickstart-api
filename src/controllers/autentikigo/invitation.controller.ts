@@ -245,7 +245,7 @@ export class InvitationController {
   @get('invitations/permission/send-admin')
   @response(200, getSwaggerResponseSchema())
   async sendAdminInvitation(
-    @param.path.string('email') email: string
+    @param.query.string('email') email: string
   ): Promise<IHttpResponse> {
     try {
       const permissionGroup: IPermissionGroup[] = await this.permissionGroupRepository

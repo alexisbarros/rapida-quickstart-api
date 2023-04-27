@@ -3,7 +3,7 @@ import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {OperationVisibility, Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response, visibility} from '@loopback/rest';
 import {SecurityBindings, UserProfile} from '@loopback/security';
-import {IModule, IPermissionGroup, MethodsEnum} from '../../domain/entities';
+import {IModule, IPermissionGroup} from '../../domain/entities';
 import {IModuleRepository, IPermissionGroupRepository} from '../../domain/repositories';
 import {ModuleRepository, PermissionGroupRepository} from '../../repositories';
 import {permissionGroupSchema} from '../../repositories/mongo/autentikigo/schemas/permission-group.schema';
@@ -220,11 +220,11 @@ export class PermissionGroupController {
           return {
             module: module._id!,
             actions: [
-              MethodsEnum.GET,
-              MethodsEnum.POST,
-              MethodsEnum.PUT,
-              MethodsEnum.PATCH,
-              MethodsEnum.DELETE,
+              'GET',
+              'POST',
+              'PUT',
+              'PATCH',
+              'DELETE',
             ],
           }
         }),

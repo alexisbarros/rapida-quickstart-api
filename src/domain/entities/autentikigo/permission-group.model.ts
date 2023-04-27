@@ -10,7 +10,7 @@ export enum MethodsEnum {
 
 export interface IPermissionGroupPermission {
   module: string | IModule,
-  actions: MethodsEnum[],
+  actions: string[],
 }
 
 export interface IPermissionGroup {

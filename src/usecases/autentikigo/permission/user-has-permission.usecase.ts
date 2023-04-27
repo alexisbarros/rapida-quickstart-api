@@ -1,11 +1,11 @@
 import {GetPermissionsFromUser} from '.';
-import {IModule, IPermission, IPermissionGroup, IPermissionGroupPermission, MethodsEnum} from '../../../domain/entities';
+import {IModule, IPermission, IPermissionGroup, IPermissionGroupPermission} from '../../../domain/entities';
 import {IPermissionGroupRepository, IPermissionRepository} from '../../../domain/repositories';
 
 interface IUserHasPermissionProps {
   userId: string,
   collection: string,
-  action: MethodsEnum,
+  action: string,
 }
 
 export class UserHasPermission {

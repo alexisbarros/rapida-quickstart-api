@@ -1,0 +1,19 @@
+{
+  "name": "App",
+  "description": "Módulo de cadastro de aplicações",
+  "collectionName": "App",
+  "route": "app"
+},
+{
+  "name": "Convite",
+  "description": "Módulo de convites",
+  "collectionName": "Invitation",
+  "route": "invitation"
+},
+{
+  "name": "Grupo de permissões",
+  "description": "Módulo de grupo de permissões",
+  "collectionName": "PermissionGroup",
+  "route": "permission-group"
+}
+

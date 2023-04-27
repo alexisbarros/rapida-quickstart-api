@@ -1,11 +1,11 @@
 import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
+import {OperationVisibility, Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response, visibility} from '@loopback/rest';
 import {SecurityBindings, UserProfile} from '@loopback/security';
-import {IPermissionGroup} from '../../domain/entities';
-import {IPermissionGroupRepository} from '../../domain/repositories';
-import {PermissionGroupRepository} from '../../repositories';
+import {IModule, IPermissionGroup, MethodsEnum} from '../../domain/entities';
+import {IModuleRepository, IPermissionGroupRepository} from '../../domain/repositories';
+import {ModuleRepository, PermissionGroupRepository} from '../../repositories';
 import {permissionGroupSchema} from '../../repositories/mongo/autentikigo/schemas/permission-group.schema';
 import {getSwaggerRequestBodySchema, getSwaggerResponseSchema} from '../../utils/general.util';
 import {IHttpResponse, badRequestErrorHttpResponse, createHttpResponse, notFoundErrorHttpResponse, okHttpResponse} from '../../utils/http-response.util';
@@ -18,6 +18,7 @@ export class PermissionGroupController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @repository(PermissionGroupRepository) private permissionGroupRepository: IPermissionGroupRepository,
+    @repository(ModuleRepository) private moduleRepository: IModuleRepository,
 
     @inject(SecurityBindings.USER, {optional: true}) private user?: UserProfile,
   ){}
@@ -193,6 +194,49 @@ export class PermissionGroupController {
         request: this.httpRequest,
         response: this.httpResponse,
       })
+    } catch(err) {
+      const errorData = {
+        message: err.message,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      }
+      if(err.statusCode === 404) return notFoundErrorHttpResponse(errorData);
+      else return badRequestErrorHttpResponse(errorData);
+    }
+  }
+
+  @visibility(OperationVisibility.UNDOCUMENTED)
+  @get('permission-groups/admin/seed')
+  @response(200, getSwaggerResponseSchema())
+  async seed(): Promise<IHttpResponse> {
+    try {
+      const modules: IModule[] = await this.moduleRepository.findAll({}, 100, 0);
+
+      const data: IPermissionGroup = await this.permissionGroupRepository.create({
+        name: 'autentikigo-admin',
+        description: 'admin',
+        app: '',
+        permissions: modules.map((module: IModule) => {
+          return {
+            module: module._id!,
+            actions: [
+              MethodsEnum.GET,
+              MethodsEnum.POST,
+              MethodsEnum.PUT,
+              MethodsEnum.PATCH,
+              MethodsEnum.DELETE,
+            ],
+          }
+        }),
+        _createdBy: '',
+        _ownerId: '',
+      });
+
+      return okHttpResponse({
+        data,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      });
     } catch(err) {
       const errorData = {
         message: err.message,

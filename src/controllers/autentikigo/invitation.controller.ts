@@ -1,11 +1,11 @@
 import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response} from '@loopback/rest';
+import {OperationVisibility, Request, Response, RestBindings, api, del, get, param, patch, post, put, requestBody, response, visibility} from '@loopback/rest';
 import {SecurityBindings, UserProfile} from '@loopback/security';
-import {IInvitation} from '../../domain/entities';
-import {IInvitationRepository} from '../../domain/repositories';
-import {InvitationRepository} from '../../repositories';
+import {IInvitation, IPermissionGroup} from '../../domain/entities';
+import {IInvitationRepository, IPermissionGroupRepository} from '../../domain/repositories';
+import {InvitationRepository, PermissionGroupRepository} from '../../repositories';
 import {invitationSchema} from '../../repositories/mongo/autentikigo/schemas/invitation.schema';
 import {SendMailByNodemailer} from '../../services';
 import {getSwaggerRequestBodySchema, getSwaggerResponseSchema} from '../../utils/general.util';
@@ -19,6 +19,7 @@ export class InvitationController {
     @inject(RestBindings.Http.RESPONSE) private httpResponse: Response,
 
     @repository(InvitationRepository) private invitationRepository: IInvitationRepository,
+    @repository(PermissionGroupRepository) private permissionGroupRepository: IPermissionGroupRepository,
 
     @inject(SecurityBindings.USER, {optional: true}) private user?: UserProfile,
   ){}
@@ -229,6 +230,43 @@ export class InvitationController {
         request: this.httpRequest,
         response: this.httpResponse,
       })
+    } catch(err) {
+      const errorData = {
+        message: err.message,
+        request: this.httpRequest,
+        response: this.httpResponse,
+      }
+      if(err.statusCode === 404) return notFoundErrorHttpResponse(errorData);
+      else return badRequestErrorHttpResponse(errorData);
+    }
+  }
+
+  @visibility(OperationVisibility.UNDOCUMENTED)
+  @get('invitations/permission/send-admin')
+  @response(200, getSwaggerResponseSchema())
+  async sendAdminInvitation(
+    @param.path.string('email') email: string
+  ): Promise<IHttpResponse> {
+    try {
+      const permissionGroup: IPermissionGroup[] = await this.permissionGroupRepository
+      .findAll({ name: 'autentikigo-admin' }, 1, 0);
+
+
+      if(permissionGroup.length){
+        const invitation: IInvitation = await this.invitationRepository.create({
+          email,
+          permissionGroup: permissionGroup[0]._id as string,
+          _createdBy: '',
+          _ownerId: '',
+        });
+
+        await this.sendInvitation(invitation._id!);
+      }
+
+      return okHttpResponse({
+        request: this.httpRequest,
+        response: this.httpResponse,
+      });
     } catch(err) {
       const errorData = {
         message: err.message,
